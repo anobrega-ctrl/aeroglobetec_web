@@ -344,4 +344,93 @@ export const api = {
     const res = check(await sb.from('reservations').delete().eq('id', id).select('id'));
     if (!res.length) throw new Error('No tenés permiso para borrar este turno.');
   },
+
+  // ---------- Docentes de la web pública ----------
+  async teachers() {
+    return check(await sb.from('site_teachers').select('*').order('position').order('full_name'));
+  },
+  async saveTeacher(t) {
+    const { id, ...fields } = t;
+    if (id) check(await sb.from('site_teachers').update(fields).eq('id', id));
+    else check(await sb.from('site_teachers').insert(fields));
+  },
+  async deleteTeacher(id) {
+    check(await sb.from('site_teachers').delete().eq('id', id));
+  },
+  async uploadTeacherPhoto(file) {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `docentes/${crypto.randomUUID()}.${ext}`;
+    check(await sb.storage.from('aero-media').upload(path, file, { contentType: file.type || undefined }));
+    return sb.storage.from('aero-media').getPublicUrl(path).data.publicUrl;
+  },
+
+  // ---------- Charlas y competencias ----------
+  async events() {
+    return check(await sb.from('events').select('*, event_members(user_id)').order('starts_on'));
+  },
+  async event(id) {
+    return check(await sb.from('events').select('*').eq('id', id).maybeSingle());
+  },
+  async saveEvent(e) {
+    const { id, ...fields } = e;
+    if (id) { check(await sb.from('events').update(fields).eq('id', id)); return id; }
+    return check(await sb.from('events').insert(fields).select('id').single()).id;
+  },
+  async deleteEvent(id) {
+    const list = check(await sb.storage.from(BUCKET).list(`eventos/${id}`, { limit: 1000 }));
+    if (list?.length) await sb.storage.from(BUCKET).remove(list.map(f => `eventos/${id}/${f.name}`));
+    check(await sb.from('events').delete().eq('id', id));
+  },
+  async eventMembers(id) {
+    const rows = check(await sb.from('event_members').select('user_id, role, profiles(*)').eq('event_id', id));
+    return rows.filter(r => r.profiles).map(r => ({ ...r.profiles, event_role: r.role }))
+      .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+  },
+  async addEventMembers(id, userIds, role = '') {
+    if (!userIds.length) return;
+    check(await sb.from('event_members').insert(userIds.map(user_id => ({ event_id: id, user_id, role }))));
+  },
+  async setEventRole(id, userId, role) {
+    check(await sb.from('event_members').update({ role }).eq('event_id', id).eq('user_id', userId));
+  },
+  async removeEventMember(id, userId) {
+    check(await sb.from('event_members').delete().eq('event_id', id).eq('user_id', userId));
+  },
+  async eventProjects(id) {
+    return check(await sb.from('event_projects').select('*, projects(name, color)').eq('event_id', id).order('created_at'));
+  },
+  async addEventProject(row) {
+    check(await sb.from('event_projects').insert(row));
+  },
+  async deleteEventProject(rowId) {
+    check(await sb.from('event_projects').delete().eq('id', rowId));
+  },
+  async eventMaterials(id) {
+    return check(await sb.from('event_materials').select('*').eq('event_id', id).order('created_at', { ascending: false }));
+  },
+  async addEventMaterial(m, file) {
+    let path = '', size = 0;
+    if (file) {
+      path = `eventos/${m.event_id}/${Date.now()}_${safeName(file.name)}`;
+      check(await sb.storage.from(BUCKET).upload(path, file, { contentType: file.type || undefined }));
+      size = file.size;
+    }
+    check(await sb.from('event_materials').insert({ ...m, path, size }));
+  },
+  async deleteEventMaterial(m) {
+    if (m.path) await sb.storage.from(BUCKET).remove([m.path]);
+    const r = check(await sb.from('event_materials').delete().eq('id', m.id).select('id'));
+    if (!r.length) throw new Error('No tenés permiso para borrar este material.');
+  },
+  async eventTasks(id) {
+    return check(await sb.from('event_tasks').select('*').eq('event_id', id).order('done').order('due_date', { nullsFirst: false }));
+  },
+  async saveEventTask(t) {
+    const { id, ...fields } = t;
+    if (id) check(await sb.from('event_tasks').update(fields).eq('id', id));
+    else check(await sb.from('event_tasks').insert(fields));
+  },
+  async deleteEventTask(id) {
+    check(await sb.from('event_tasks').delete().eq('id', id));
+  },
 };

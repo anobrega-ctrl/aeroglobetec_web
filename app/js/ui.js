@@ -311,6 +311,11 @@ const ICONS = {
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v4M8 21h8"/>',
+  play: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  presentation: '<path d="M3 4h18M5 4v10h14V4M12 14v4M8 21l4-3 4 3"/>',
 };
 export function icon(nameOf, cls = '') {
   return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[nameOf] || ''}</svg>`;
@@ -348,4 +353,32 @@ export function markdown(src) {
   }
   flushPara(); flushList();
   return out.join('\n');
+}
+
+// ---------- Contenido embebible ----------
+// Convierte links de Canva, Google (Slides/Docs/Drive) y YouTube en su versión para mostrar adentro de la página.
+export function embedUrl(raw) {
+  let u;
+  try { u = new URL(raw); } catch { return null; }
+  if (!/^https?:$/.test(u.protocol)) return null;
+  const host = u.hostname.replace(/^www\./, '');
+  if (host === 'canva.com' && /^\/design\//.test(u.pathname)) {
+    const base = u.pathname.replace(/\/(edit|view|watch)$/, '');
+    return `https://www.canva.com${base}/view?embed`;
+  }
+  if (host === 'docs.google.com') {
+    const m = u.pathname.match(/^\/(presentation|document|spreadsheets)\/d\/([\w-]+)/);
+    if (m) return m[1] === 'presentation'
+      ? `https://docs.google.com/presentation/d/${m[2]}/embed?start=false&loop=false`
+      : `https://docs.google.com/${m[1]}/d/${m[2]}/preview`;
+  }
+  if (host === 'drive.google.com') {
+    const m = u.pathname.match(/\/file\/d\/([\w-]+)/);
+    if (m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  }
+  if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtu.be') {
+    const id = host === 'youtu.be' ? u.pathname.slice(1) : (u.searchParams.get('v') || u.pathname.match(/\/(?:embed|shorts)\/([\w-]+)/)?.[1]);
+    if (id && /^[\w-]{6,20}$/.test(id)) return `https://www.youtube-nocookie.com/embed/${id}`;
+  }
+  return null;
 }

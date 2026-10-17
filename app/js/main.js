@@ -8,6 +8,8 @@ import { renderUsers } from './views/users.js';
 import { renderReport } from './views/report.js';
 import { renderTurnos } from './views/turnos.js';
 import { renderSitio } from './views/sitio.js';
+import { renderEventos } from './views/eventos.js';
+import { renderEvento } from './views/evento.js';
 
 const { api } = DEMO_MODE ? await import('./demo-api.js') : await import('./api.js');
 const app = document.getElementById('app');
@@ -19,7 +21,9 @@ const routes = [
   [/^#\/proyecto\/([\w-]+)(?:\/(\w+))?$/, () => renderProject],
   [/^#\/usuarios$/, () => renderUsers],
   [/^#\/turnos$/, () => renderTurnos],
-  [/^#\/sitio$/, () => renderSitio],
+  [/^#\/eventos$/, () => renderEventos],
+  [/^#\/evento\/([\w-]+)(?:\/(\w+))?$/, () => renderEvento],
+  [/^#\/sitio(?:\/(\w+))?$/, () => renderSitio],
 ];
 
 async function boot() {
@@ -74,6 +78,7 @@ function renderShell() {
         </a>
         <nav class="side-nav" aria-label="Principal">
           <a href="#/" data-nav="home">${icon('home')}<span>Inicio</span></a>
+          <a href="#/eventos" data-nav="eventos">${icon('trophy')}<span>Charlas y competencias</span></a>
           <a href="#/turnos" data-nav="turnos">${icon('calendar')}<span>Turnos</span></a>
           ${staff ? `<a href="#/usuarios" data-nav="users">${icon('users')}<span>Usuarios</span></a>` : ''}
           ${canManageRoles(me) ? `<a href="#/sitio" data-nav="sitio">${icon('globe')}<span>Sitio web</span></a>` : ''}
@@ -164,7 +169,7 @@ function markActive() {
   const proj = hash.match(/^#\/proyecto\/([\w-]+)/)?.[1];
   app.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active',
     (a.dataset.nav === 'home' && hash === '#/') || (a.dataset.nav === 'users' && hash === '#/usuarios') ||
-    (a.dataset.nav === 'turnos' && hash === '#/turnos') || (a.dataset.nav === 'sitio' && hash === '#/sitio')));
+    (a.dataset.nav === 'turnos' && hash === '#/turnos') || (a.dataset.nav === 'eventos' && (hash === '#/eventos' || hash.startsWith('#/evento/'))) || (a.dataset.nav === 'sitio' && hash.startsWith('#/sitio'))));
   app.querySelectorAll('[data-proj]').forEach(a => a.classList.toggle('active', a.dataset.proj === proj));
 }
 

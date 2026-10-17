@@ -1196,3 +1196,276 @@ create policy aero_media_update on storage.objects for update to authenticated
   with check (bucket_id = 'aero-media' and public.can_edit_site());
 create policy aero_media_delete on storage.objects for delete to authenticated
   using (bucket_id = 'aero-media' and public.can_edit_site());
+
+-- =====================================================================
+-- Docentes de la web pública
+-- La web los lee sin login; los editan docentes y admins desde la plataforma.
+-- =====================================================================
+create table if not exists public.site_teachers (
+  id          uuid primary key default gen_random_uuid(),
+  full_name   text not null check (length(trim(full_name)) > 0),
+  role_es     text not null default 'Docente del taller',
+  role_en     text not null default 'Workshop teacher',
+  email       text not null default '' check (email = '' or email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
+  phone       text not null default '' check (length(phone) <= 40),
+  photo_url   text not null default '' check (photo_url = '' or photo_url ~ '^https://'),
+  position    integer not null default 0,
+  visible     boolean not null default true,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+alter table public.site_teachers enable row level security;
+drop policy if exists site_teachers_read on public.site_teachers;
+drop policy if exists site_teachers_write on public.site_teachers;
+create policy site_teachers_read on public.site_teachers for select to anon, authenticated
+  using (visible or public.can_edit_site());
+create policy site_teachers_write on public.site_teachers for all to authenticated
+  using (public.can_edit_site()) with check (public.can_edit_site());
+
+create or replace function public.touch_updated_at() returns trigger
+language plpgsql as $$ begin new.updated_at := now(); return new; end $$;
+drop trigger if exists site_teachers_touch on public.site_teachers;
+create trigger site_teachers_touch before update on public.site_teachers
+  for each row execute function public.touch_updated_at();
+
+-- Docentes que ya estaban en la web (solo la primera vez)
+do $$
+begin
+  if not exists (select 1 from public.site_teachers) then
+    insert into public.site_teachers (full_name, email, phone, photo_url, position) values
+      ('María Gema Pont', 'maria.pont@etec.um.edu.ar', '',
+       'https://nveisqekmbcdvnuebice.supabase.co/storage/v1/object/public/aero-media/cms/ec9862ce-7472-4d67-a3b0-1cd2de522b10.webp', 1),
+      ('Patricia Furci', 'patricia.furci@etec.um.edu.ar', '',
+       'https://nveisqekmbcdvnuebice.supabase.co/storage/v1/object/public/aero-media/cms/a329761b-08ce-4d51-a422-62d4a93e6f17.webp', 2),
+      ('Mario Papetti Funes', 'mario.papetti@etec.um.edu.ar', '+54 9 261 566-4422',
+       'https://nveisqekmbcdvnuebice.supabase.co/storage/v1/object/public/aero-media/cms/0a8357e5-9ffa-4218-b683-cad24bf2fa5f.webp', 3);
+  end if;
+end $$;
+
+-- =====================================================================
+-- Charlas y competencias
+-- =====================================================================
+do $$ begin
+  create type public.event_kind as enum ('charla', 'competencia');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.event_status as enum ('preparacion', 'confirmado', 'realizado', 'cancelado');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.material_kind as enum ('presentacion', 'infografia', 'enlace', 'documento', 'video');
+exception when duplicate_object then null; end $$;
+
+create table if not exists public.events (
+  id           uuid primary key default gen_random_uuid(),
+  kind         public.event_kind not null,
+  title        text not null check (length(trim(title)) > 0),
+  description  text not null default '',
+  starts_on    date not null,
+  ends_on      date,
+  location     text not null default '',
+  organizer    text not null default '',
+  website      text not null default '' check (website = '' or website ~ '^https?://'),
+  status       public.event_status not null default 'preparacion',
+  color        text not null default '#3774bc',
+  created_by   uuid references public.profiles(id) on delete set null,
+  created_at   timestamptz not null default now(),
+  check (ends_on is null or ends_on >= starts_on)
+);
+
+create table if not exists public.event_members (
+  event_id  uuid not null references public.events(id) on delete cascade,
+  user_id   uuid not null references public.profiles(id) on delete cascade,
+  role      text not null default '',
+  added_at  timestamptz not null default now(),
+  primary key (event_id, user_id)
+);
+
+-- Proyectos que se presentan: del panel (project_id) o de afuera (solo nombre)
+create table if not exists public.event_projects (
+  id          uuid primary key default gen_random_uuid(),
+  event_id    uuid not null references public.events(id) on delete cascade,
+  project_id  uuid references public.projects(id) on delete set null,
+  name        text not null default '',
+  note        text not null default '',
+  created_at  timestamptz not null default now(),
+  check (project_id is not null or length(trim(name)) > 0)
+);
+
+create table if not exists public.event_materials (
+  id          uuid primary key default gen_random_uuid(),
+  event_id    uuid not null references public.events(id) on delete cascade,
+  kind        public.material_kind not null,
+  title       text not null check (length(trim(title)) > 0),
+  url         text not null default '' check (url = '' or url ~ '^https?://'),
+  path        text not null default '',
+  size        bigint not null default 0,
+  author_id   uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  check (url <> '' or path <> '')
+);
+
+create table if not exists public.event_tasks (
+  id           uuid primary key default gen_random_uuid(),
+  event_id     uuid not null references public.events(id) on delete cascade,
+  title        text not null check (length(trim(title)) > 0),
+  done         boolean not null default false,
+  assignee_id  uuid references public.profiles(id) on delete set null,
+  due_date     date,
+  created_at   timestamptz not null default now()
+);
+
+create index if not exists events_date_idx on public.events(starts_on);
+create index if not exists event_materials_idx on public.event_materials(event_id, created_at desc);
+create index if not exists event_tasks_idx on public.event_tasks(event_id);
+
+-- Quién ve un evento: docentes, líderes, admins y el equipo del evento
+create or replace function public.can_view_event(e uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.is_staff()
+      or exists (select 1 from event_members where event_id = e and user_id = auth.uid());
+$$;
+
+-- Quien crea el evento queda en el equipo
+create or replace function public.event_after_insert() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.created_by is not null then
+    insert into event_members (event_id, user_id, role) values (new.id, new.created_by, 'Organización')
+    on conflict do nothing;
+  end if;
+  return new;
+end $$;
+
+create or replace function public.event_before_insert() returns trigger
+language plpgsql as $$
+begin
+  new.created_by := coalesce(auth.uid(), new.created_by);
+  return new;
+end $$;
+
+drop trigger if exists event_before_insert on public.events;
+create trigger event_before_insert before insert on public.events
+  for each row execute function public.event_before_insert();
+drop trigger if exists event_after_insert on public.events;
+create trigger event_after_insert after insert on public.events
+  for each row execute function public.event_after_insert();
+
+-- Aviso al sumar a alguien al equipo de un evento
+create or replace function public.track_event_members() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  ev record;
+begin
+  select title, kind into ev from events where id = new.event_id;
+  if new.user_id is distinct from auth.uid() then
+    insert into notifications (user_id, project_id, message, link)
+    values (new.user_id, null,
+            'Te sumaron a la ' || ev.kind || ' "' || ev.title || '"',
+            '#/evento/' || new.event_id);
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists track_event_members on public.event_members;
+create trigger track_event_members after insert on public.event_members
+  for each row execute function public.track_event_members();
+
+-- Las tareas de preparación solo se asignan a gente del equipo
+create or replace function public.guard_event_task() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.assignee_id is not null and not exists (select 1 from event_members where event_id = new.event_id and user_id = new.assignee_id) then
+    raise exception 'La persona asignada no está en el equipo del evento';
+  end if;
+  if tg_op = 'UPDATE' and new.event_id <> old.event_id then
+    raise exception 'No se puede mover una tarea a otro evento';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_event_task on public.event_tasks;
+create trigger guard_event_task before insert or update on public.event_tasks
+  for each row execute function public.guard_event_task();
+
+create or replace function public.guard_event_material() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'INSERT' then
+    new.author_id := coalesce(auth.uid(), new.author_id);
+  end if;
+  -- Los archivos subidos tienen que estar en la carpeta del evento
+  if new.path <> '' and new.path not like 'eventos/' || new.event_id || '/%' then
+    raise exception 'Ruta de archivo inválida para este evento';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_event_material on public.event_materials;
+create trigger guard_event_material before insert or update on public.event_materials
+  for each row execute function public.guard_event_material();
+
+-- Permisos
+alter table public.events          enable row level security;
+alter table public.event_members   enable row level security;
+alter table public.event_projects  enable row level security;
+alter table public.event_materials enable row level security;
+alter table public.event_tasks     enable row level security;
+
+do $$
+declare r record;
+begin
+  for r in select policyname, tablename from pg_policies
+           where schemaname = 'public'
+             and tablename in ('events', 'event_members', 'event_projects', 'event_materials', 'event_tasks') loop
+    execute format('drop policy %I on public.%I', r.policyname, r.tablename);
+  end loop;
+end $$;
+
+-- Eventos: los crean y editan docentes y líderes; los ve el equipo
+create policy events_select on public.events for select to authenticated using (public.can_view_event(id));
+create policy events_write  on public.events for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+create policy event_members_select on public.event_members for select to authenticated using (public.can_view_event(event_id));
+create policy event_members_write  on public.event_members for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+create policy event_projects_select on public.event_projects for select to authenticated using (public.can_view_event(event_id));
+create policy event_projects_write  on public.event_projects for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+-- Materiales: cualquiera del equipo sube; borra quien lo subió o docentes/líderes
+create policy event_materials_select on public.event_materials for select to authenticated using (public.can_view_event(event_id));
+create policy event_materials_insert on public.event_materials for insert to authenticated
+  with check (public.can_view_event(event_id) and author_id = auth.uid());
+create policy event_materials_update on public.event_materials for update to authenticated
+  using (public.is_staff() or author_id = auth.uid()) with check (public.can_view_event(event_id));
+create policy event_materials_delete on public.event_materials for delete to authenticated
+  using (public.is_staff() or author_id = auth.uid());
+
+-- Preparación: el equipo agrega y tilda tareas; borran docentes/líderes
+create policy event_tasks_select on public.event_tasks for select to authenticated using (public.can_view_event(event_id));
+create policy event_tasks_insert on public.event_tasks for insert to authenticated with check (public.can_view_event(event_id));
+create policy event_tasks_update on public.event_tasks for update to authenticated
+  using (public.can_view_event(event_id)) with check (public.can_view_event(event_id));
+create policy event_tasks_delete on public.event_tasks for delete to authenticated using (public.is_staff());
+
+-- Archivos de eventos: bucket privado "proyectos", carpeta eventos/<id>/
+create or replace function public.storage_event(path text) returns uuid
+language plpgsql immutable as $$
+begin
+  if split_part(path, '/', 1) <> 'eventos' then return null; end if;
+  return split_part(path, '/', 2)::uuid;
+exception when others then
+  return null;
+end $$;
+
+drop policy if exists eventos_select on storage.objects;
+drop policy if exists eventos_insert on storage.objects;
+drop policy if exists eventos_delete on storage.objects;
+create policy eventos_select on storage.objects for select to authenticated
+  using (bucket_id = 'proyectos' and public.can_view_event(public.storage_event(name)));
+create policy eventos_insert on storage.objects for insert to authenticated
+  with check (bucket_id = 'proyectos' and public.can_view_event(public.storage_event(name)));
+create policy eventos_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'proyectos' and public.storage_event(name) is not null and (owner = auth.uid() or public.is_staff()));
