@@ -608,4 +608,56 @@ h1,h2,h3{letter-spacing:-.025em}
   update();
 })();
 </script>
+<script id="aero-docentes">
+(() => {
+  // Docentes: se cargan desde la base (los edita la plataforma). Si no hay conexión,
+  // quedan las tarjetas que ya trae el HTML.
+  const cfg = window.AERO_BACKEND || {};
+  if (!/^https:\/\//.test(cfg.url || '') || !cfg.anonKey) return;
+  const CACHE = 'aero-docentes-cache';
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const lang = () => { try { return localStorage.getItem('aeroglob-lang') === 'en' ? 'en' : 'es'; } catch (e) { return 'es'; } };
+  const initials = (n) => { const p = String(n).trim().split(/\s+/); return ((p[0] || '')[0] || '') + ((p.length > 1 ? p[p.length - 1] : '')[0] || ''); };
+  const nameHtml = (n) => { const p = esc(n).split(' '); return p.length > 1 ? p.slice(0, -1).join(' ') + '<br/>' + p[p.length - 1] : p[0]; };
+
+  function card(t, i) {
+    const photo = /^https:\/\//.test(t.photo_url || '')
+      ? `<img alt="Foto de ${esc(t.full_name)}" class="aero-teacher-photo has-photo" src="${esc(t.photo_url)}" loading="lazy"/>` : '';
+    const mail = t.email ? `<a href="mailto:${esc(t.email)}"><svg aria-hidden="true"><use href="#i-mail"></use></svg>${esc(t.email)}</a>` : '';
+    const tel = String(t.phone || '').replace(/[^\d+]/g, '');
+    const phone = t.phone && tel ? `<a href="tel:${esc(tel)}"><svg aria-hidden="true"><use href="#i-phone"></use></svg>${esc(t.phone)}</a>` : '';
+    return `<article class="teacher-card" data-reveal="" style="--delay:${Math.min(i, 5) * 70}ms">`
+      + `<div class="teacher-avatar"><span class="teacher-initials">${esc(initials(t.full_name).toUpperCase())}</span>${photo}</div>`
+      + `<span class="role" data-es="${esc(t.role_es)}" data-en="${esc(t.role_en || t.role_es)}">${esc(lang() === 'en' ? (t.role_en || t.role_es) : t.role_es)}</span>`
+      + `<h3>${nameHtml(t.full_name)}</h3>${mail}${phone}</article>`;
+  }
+
+  function render(list) {
+    if (!Array.isArray(list) || !list.length) return;
+    const html = list.map(card).join('');
+    const tpl = document.getElementById('vista-profes');
+    const grid = tpl && tpl.content.querySelector('.teachers');
+    if (grid) grid.innerHTML = html;
+    const live = document.querySelector('#contenido .teachers');
+    if (live) {
+      live.innerHTML = html;
+      live.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('in-view'));
+    }
+  }
+
+  try { render(JSON.parse(localStorage.getItem(CACHE) || 'null')); } catch (e) {}
+  fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/site_teachers?select=full_name,role_es,role_en,email,phone,photo_url&visible=eq.true&order=position,full_name',
+    { headers: { apikey: cfg.anonKey, Accept: 'application/json' }, cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+    .then((list) => { render(list); try { localStorage.setItem(CACHE, JSON.stringify(list)); } catch (e) {} })
+    .catch((err) => console.warn('AeroGlobETec: no se pudieron cargar los docentes, se muestran los de la página.', err.message));
+
+  // Cargo en el idioma elegido
+  document.querySelectorAll('.aero-lang button').forEach((b) => b.addEventListener('click', () => setTimeout(() => {
+    const l = lang();
+    const roots = [document, document.getElementById('vista-profes')?.content].filter(Boolean);
+    roots.forEach((root) => root.querySelectorAll('.teacher-card .role[data-es]').forEach((el) => { el.textContent = el.dataset[l] || el.dataset.es; }));
+  }, 0)));
+})();
+</script>
 </body></html>

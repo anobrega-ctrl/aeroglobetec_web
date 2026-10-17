@@ -2,9 +2,12 @@ import { esc, name, icon, isStaff, dueLabel, daysUntil, fmtDate, openForm, field
 
 export async function renderDashboard(el, { api, me }) {
   const staff = isStaff(me);
-  const [projects, myTasks, milestones, queue] = await Promise.all([
+  const [projects, myTasks, milestones, queue, events] = await Promise.all([
     api.projects(), api.myTasks(me.id), api.upcomingMilestones(), staff ? api.reviewQueue() : null,
+    api.events().catch(() => []),
   ]);
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const nextEvents = events.filter(e => (e.ends_on || e.starts_on) >= todayIso && e.status !== 'cancelado').slice(0, 4);
   const active = projects.filter(p => !p.archived);
   const archived = projects.filter(p => p.archived);
   const firstName = (me.full_name || '').split(' ')[0] || name(me);
@@ -37,6 +40,18 @@ export async function renderDashboard(el, { api, me }) {
             ${queue.updates.map(u => `<li><a class="row-link" href="#/proyecto/${u.project_id}/avances"><span class="badge amber">Avance</span><span class="grow"><strong>${esc(u.title)}</strong><small>${esc(u.projects?.name)}</small></span></a></li>`).join('')}
             ${queue.tasks.map(t => `<li><a class="row-link" href="#/proyecto/${t.project_id}/tareas"><span class="badge blue">Tarea</span><span class="grow"><strong>${esc(t.title)}</strong><small>${esc(t.projects?.name)}</small></span></a></li>`).join('')}
           </ul>` : emptyState('Nada pendiente de revisión')}
+        </section>` : ''}
+
+        ${nextEvents.length ? `
+        <section class="panel">
+          <h2>Charlas y competencias</h2>
+          <ul class="list">${nextEvents.map(e => {
+            const n = daysUntil(e.starts_on);
+            return `<li><a class="row-link" href="#/evento/${e.id}">
+              <span class="countdown ${n <= 7 ? 'soon' : ''}"><b>${n}</b><small>${n === 1 ? 'día' : 'días'}</small></span>
+              <span class="grow"><strong>${esc(e.title)}</strong><small>${e.kind === 'charla' ? 'Charla' : 'Competencia'} · ${fmtDate(e.starts_on)}</small></span>
+            </a></li>`;
+          }).join('')}</ul>
         </section>` : ''}
 
         <section class="panel">

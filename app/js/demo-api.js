@@ -2,7 +2,7 @@
 // Sirve para probar la interfaz sin login. Repite las reglas principales de permisos
 // de supabase/schema.sql, pero la seguridad real está solo en la base de datos.
 
-const KEY = 'age-demo-v4';
+const KEY = 'age-demo-v5';
 
 // Presentación de ejemplo (la misma que supabase/presentacion_dron_rover.sql)
 const ROVER_MD = `# Dron Rover · CATE 2027
@@ -150,6 +150,43 @@ function seed() {
     ],
     seq: 100,
     ...demoExtras(P, { mec, ele }, { doc, lider, tomas, sofia, mateo }),
+    ...demoEvents(P, { doc, lider, tomas, sofia, valen }),
+  };
+}
+
+// Docentes de la web y charlas/competencias de ejemplo
+function demoEvents(P, { doc, lider, tomas, sofia, valen }) {
+  const E1 = uid(), E2 = uid();
+  return {
+    teachers: [
+      { id: uid(), full_name: 'María Gema Pont', role_es: 'Docente del taller', role_en: 'Workshop teacher', email: 'maria.pont@etec.um.edu.ar', phone: '', photo_url: '', position: 1, visible: true },
+      { id: uid(), full_name: 'Patricia Furci', role_es: 'Docente del taller', role_en: 'Workshop teacher', email: 'patricia.furci@etec.um.edu.ar', phone: '', photo_url: '', position: 2, visible: true },
+      { id: uid(), full_name: 'Mario Papetti Funes', role_es: 'Docente del taller', role_en: 'Workshop teacher', email: 'mario.papetti@etec.um.edu.ar', phone: '+54 9 261 566-4422', photo_url: '', position: 3, visible: true },
+    ],
+    events: [
+      { id: E1, kind: 'competencia', title: 'CATE 2027', description: 'Competencia Argentina de Tecnología Espacial. Presentamos el Dron Rover.', starts_on: '2027-04-15', ends_on: '2027-04-17', location: 'Córdoba', organizer: 'CATE', website: 'https://example.org/cate', status: 'preparacion', color: '#3774bc', created_by: lider, created_at: ago(100) },
+      { id: E2, kind: 'charla', title: 'Charla en la Expo ETec', description: 'Contamos qué hace el taller y mostramos el prototipo.', starts_on: day(12), ends_on: null, location: 'SUM de la ETec', organizer: 'ETec UM', website: '', status: 'confirmado', color: '#ffb454', created_by: doc, created_at: ago(50) },
+    ],
+    eventMembers: [
+      { event_id: E1, user_id: lider, role: 'Organización' }, { event_id: E1, user_id: tomas, role: 'Expositor' }, { event_id: E1, user_id: sofia, role: 'Equipo técnico' },
+      { event_id: E2, user_id: doc, role: 'Organización' }, { event_id: E2, user_id: valen, role: 'Expositora' }, { event_id: E2, user_id: tomas, role: 'Expositor' },
+    ],
+    eventProjects: [
+      { id: uid(), event_id: E1, project_id: P, name: '', note: 'Proyecto principal', created_at: ago(90) },
+      { id: uid(), event_id: E2, project_id: P, name: '', note: '', created_at: ago(40) },
+      { id: uid(), event_id: E2, project_id: null, name: 'Estación meteorológica (6.º año)', note: 'De otro curso', created_at: ago(40) },
+    ],
+    eventMaterials: [
+      { id: uid(), event_id: E1, kind: 'presentacion', title: 'Presentación del Dron Rover', url: 'https://www.canva.com/design/DAFxxxxxxx/view', path: '', size: 0, author_id: tomas, created_at: ago(30) },
+      { id: uid(), event_id: E1, kind: 'enlace', title: 'Reglamento del CATE', url: 'https://example.org/reglamento', path: '', size: 0, author_id: lider, created_at: ago(60) },
+      { id: uid(), event_id: E2, kind: 'video', title: 'Video de la prueba de tracción', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', path: '', size: 0, author_id: valen, created_at: ago(10) },
+    ],
+    eventTasks: [
+      { id: uid(), event_id: E1, title: 'Leer el reglamento completo', done: true, assignee_id: lider, due_date: day(-5), created_at: ago(80) },
+      { id: uid(), event_id: E1, title: 'Armar la infografía del proyecto', done: false, assignee_id: sofia, due_date: day(20), created_at: ago(40) },
+      { id: uid(), event_id: E1, title: 'Ensayar la presentación', done: false, assignee_id: tomas, due_date: day(40), created_at: ago(40) },
+      { id: uid(), event_id: E2, title: 'Preparar el stand', done: false, assignee_id: valen, due_date: day(10), created_at: ago(20) },
+    ],
   };
 }
 
@@ -575,4 +612,89 @@ export const api = {
     db.reservations = db.reservations.filter(x => x.id !== id);
     save();
   },
+
+  // ---------- Docentes de la web pública ----------
+  async teachers() { return clone(db.teachers).sort((a, b) => a.position - b.position || a.full_name.localeCompare(b.full_name)); },
+  async saveTeacher(t) {
+    if (!(meP().is_admin || meP().role === 'docente')) deny();
+    const row = db.teachers.find(x => x.id === t.id);
+    if (row) Object.assign(row, t);
+    else db.teachers.push({ id: uid(), role_es: 'Docente del taller', role_en: 'Workshop teacher', email: '', phone: '', photo_url: '', position: db.teachers.length + 1, visible: true, ...t });
+    save();
+  },
+  async deleteTeacher(id) { if (!(meP().is_admin || meP().role === 'docente')) deny(); db.teachers = db.teachers.filter(t => t.id !== id); save(); },
+  async uploadTeacherPhoto() { throw new Error('En modo demo pegá un link https de la foto.'); },
+
+  // ---------- Charlas y competencias ----------
+  async events() {
+    const can = (e) => staff() || db.eventMembers.some(m => m.event_id === e.id && m.user_id === db.me);
+    return clone(db.events.filter(can).map(e => ({ ...e, event_members: db.eventMembers.filter(m => m.event_id === e.id).map(m => ({ user_id: m.user_id })) })))
+      .sort((a, b) => a.starts_on.localeCompare(b.starts_on));
+  },
+  async event(id) {
+    const e = db.events.find(x => x.id === id);
+    if (!e || !(staff() || db.eventMembers.some(m => m.event_id === id && m.user_id === db.me))) return null;
+    return clone(e);
+  },
+  async saveEvent(e) {
+    if (!staff()) deny();
+    if (e.ends_on && e.starts_on && e.ends_on < e.starts_on) throw new Error('La fecha de fin no puede ser anterior al inicio');
+    const row = db.events.find(x => x.id === e.id);
+    if (row) { Object.assign(row, e); save(); return row.id; }
+    const id = uid();
+    db.events.push({ description: '', ends_on: null, location: '', organizer: '', website: '', status: 'preparacion', color: '#3774bc', ...e, id, created_by: db.me, created_at: now() });
+    db.eventMembers.push({ event_id: id, user_id: db.me, role: 'Organización' });
+    save(); return id;
+  },
+  async deleteEvent(id) {
+    if (!staff()) deny();
+    for (const k of ['eventMembers', 'eventProjects', 'eventMaterials', 'eventTasks']) db[k] = db[k].filter(r => r.event_id !== id);
+    db.events = db.events.filter(e => e.id !== id); save();
+  },
+  async eventMembers(id) {
+    return clone(db.eventMembers.filter(m => m.event_id === id).map(m => ({ ...db.profiles.find(p => p.id === m.user_id), event_role: m.role })))
+      .sort((a, b) => a.full_name.localeCompare(b.full_name));
+  },
+  async addEventMembers(id, ids, role = '') {
+    if (!staff()) deny();
+    const ev = db.events.find(e => e.id === id);
+    for (const user_id of ids) {
+      if (db.eventMembers.some(m => m.event_id === id && m.user_id === user_id)) continue;
+      db.eventMembers.push({ event_id: id, user_id, role });
+      if (user_id !== db.me) db.notifications.push({ id: ++db.seq, user_id, project_id: null, message: `Te sumaron a la ${ev.kind} "${ev.title}"`, link: `#/evento/${id}`, read: false, created_at: now() });
+    }
+    save();
+  },
+  async setEventRole(id, userId, role) { if (!staff()) deny(); const m = db.eventMembers.find(x => x.event_id === id && x.user_id === userId); if (m) m.role = role; save(); },
+  async removeEventMember(id, userId) { if (!staff()) deny(); db.eventMembers = db.eventMembers.filter(m => !(m.event_id === id && m.user_id === userId)); save(); },
+  async eventProjects(id) {
+    return clone(db.eventProjects.filter(r => r.event_id === id).map(r => ({ ...r, projects: r.project_id ? (({ name, color }) => ({ name, color }))(db.projects.find(p => p.id === r.project_id) || {}) : null })));
+  },
+  async addEventProject(row) {
+    if (!staff()) deny();
+    if (!row.project_id && !String(row.name || '').trim()) throw new Error('Elegí un proyecto o escribí su nombre');
+    db.eventProjects.push({ id: uid(), name: '', note: '', created_at: now(), ...row }); save();
+  },
+  async deleteEventProject(rowId) { if (!staff()) deny(); db.eventProjects = db.eventProjects.filter(r => r.id !== rowId); save(); },
+  async eventMaterials(id) { return clone(db.eventMaterials.filter(m => m.event_id === id)).sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+  async addEventMaterial(m, file) {
+    let path = '', size = 0;
+    if (file) { path = (await this.uploadFiles(m.event_id, 'eventos', [file]))[0].path; size = file.size; }
+    db.eventMaterials.push({ id: uid(), url: '', ...m, path, size, author_id: db.me, created_at: now() }); save();
+  },
+  async deleteEventMaterial(m) {
+    if (!staff() && m.author_id !== db.me) deny();
+    db.eventMaterials = db.eventMaterials.filter(x => x.id !== m.id); save();
+  },
+  async eventTasks(id) { return clone(db.eventTasks.filter(t => t.event_id === id)).sort((a, b) => (a.done - b.done) || String(a.due_date || '9').localeCompare(String(b.due_date || '9'))); },
+  async saveEventTask(t) {
+    const row = db.eventTasks.find(x => x.id === t.id);
+    const evId = row?.event_id || t.event_id;
+    const assignee = t.assignee_id !== undefined ? t.assignee_id : row?.assignee_id;
+    if (assignee && !db.eventMembers.some(m => m.event_id === evId && m.user_id === assignee)) throw new Error('La persona asignada no está en el equipo del evento');
+    if (row) Object.assign(row, t);
+    else db.eventTasks.push({ id: uid(), done: false, assignee_id: null, due_date: null, created_at: now(), ...t });
+    save();
+  },
+  async deleteEventTask(id) { if (!staff()) deny(); db.eventTasks = db.eventTasks.filter(t => t.id !== id); save(); },
 };

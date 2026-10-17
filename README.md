@@ -49,6 +49,14 @@ insert into public.admins (email) values ('nombre@alumno.etec.um.edu.ar');
 
 **Sitio web:** docentes y admins editan textos, apartados, fotos, galerías y colores de la web pública desde la plataforma, con vista previa. Los cambios se guardan como borrador y la web los muestra recién al tocar **Publicar en la web**. La base de datos solo deja guardar, publicar y subir fotos a docentes y admins con sesión iniciada. La web pública lee lo publicado sin login.
 
+**Charlas y competencias:** cada evento (charla o competencia) tiene fecha, lugar, estado, un equipo con roles (expositor/a, equipo técnico, etc.) y los proyectos que se presentan, sean del panel o de afuera. Además:
+- **Materiales:** presentaciones, infografías, videos, documentos y enlaces. Los links de Canva, Google Slides/Docs/Drive y YouTube se ven embebidos adentro de la plataforma.
+- **Preparación:** lista de tareas con responsable y fecha, que el equipo va tildando.
+
+Los eventos los crean docentes y líderes, y cada uno lo ve solo su equipo. El inicio muestra los próximos.
+
+**Docentes de la web:** en **Sitio web → Docentes** se agregan, ordenan, ocultan o quitan los profes (nombre, cargo, mail, teléfono y foto). La web los muestra al instante, sin publicar.
+
 **Turnos de equipos:** agenda semanal para reservar la impresora 3D, la estación de soldado, el osciloscopio, etc. Cada turno queda a nombre de un proyecto y un área, y la base de datos no deja que dos turnos del mismo equipo se superpongan. Todos ven la agenda completa. Docentes y líderes cargan o desactivan equipos desde el botón **Equipos**.
 
 **App instalable:** en Chrome o Android aparece **📲 Instalar app** en el menú de usuario (o el ícono de instalar en la barra de direcciones). En iPhone se instala desde *Compartir → Agregar a inicio*. Solo funciona con `https` o en `localhost`.

@@ -1,11 +1,11 @@
 // Service worker de la plataforma: guarda los archivos de la app para que abra rápido
 // y funcione como app instalada. Los datos (Supabase) nunca se guardan acá: siempre van a la red.
-const CACHE = 'age-app-v4';
+const CACHE = 'age-app-v5';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/main.js', 'js/api.js', 'js/demo-api.js', 'js/ui.js', 'js/config.js', 'js/export.js',
   'js/views/login.js', 'js/views/dashboard.js', 'js/views/project.js', 'js/views/users.js',
-  'js/views/report.js', 'js/views/turnos.js', 'js/views/sitio.js',
+  'js/views/report.js', 'js/views/turnos.js', 'js/views/sitio.js', 'js/views/eventos.js', 'js/views/evento.js',
   'js/views/tabs/summary.js', 'js/views/tabs/presentation.js', 'js/views/tabs/tasks.js', 'js/views/tabs/updates.js', 'js/views/tabs/milestones.js',
   'js/views/tabs/ensayos.js', 'js/views/tabs/team.js', 'js/views/tabs/files.js', 'js/views/tabs/inventory.js',
   'js/views/tabs/performance.js', 'js/views/tabs/activity.js',
