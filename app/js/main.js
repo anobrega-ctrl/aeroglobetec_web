@@ -1,17 +1,17 @@
 // Punto de entrada: elige la API (Supabase o demo), controla la sesión y el ruteo por hash.
-import { DEMO_MODE } from './config.js';
-import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js';
-import { renderLogin } from './views/login.js';
-import { renderDashboard } from './views/dashboard.js';
-import { renderProject } from './views/project.js';
-import { renderUsers } from './views/users.js';
-import { renderReport } from './views/report.js';
-import { renderTurnos } from './views/turnos.js';
-import { renderSitio } from './views/sitio.js';
-import { renderEventos } from './views/eventos.js';
-import { renderEvento } from './views/evento.js';
+import { DEMO_MODE } from './config.js?v=202610171852';
+import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610171852';
+import { renderLogin } from './views/login.js?v=202610171852';
+import { renderDashboard } from './views/dashboard.js?v=202610171852';
+import { renderProject } from './views/project.js?v=202610171852';
+import { renderUsers } from './views/users.js?v=202610171852';
+import { renderReport } from './views/report.js?v=202610171852';
+import { renderTurnos } from './views/turnos.js?v=202610171852';
+import { renderSitio } from './views/sitio.js?v=202610171852';
+import { renderEventos } from './views/eventos.js?v=202610171852';
+import { renderEvento } from './views/evento.js?v=202610171852';
 
-const { api } = DEMO_MODE ? await import('./demo-api.js') : await import('./api.js');
+const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610171852') : await import('./api.js?v=202610171852');
 const app = document.getElementById('app');
 let me = null;
 

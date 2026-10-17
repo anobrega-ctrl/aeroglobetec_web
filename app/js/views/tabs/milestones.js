@@ -1,4 +1,4 @@
-import { esc, field, openForm, confirmAction, toast, errorMessage, fmtDate, daysUntil, emptyState } from '../../ui.js';
+import { esc, field, openForm, confirmAction, toast, errorMessage, fmtDate, daysUntil, emptyState } from '../../ui.js?v=202610171852';
 
 export async function renderMilestones(el, ctx) {
   const { api, project, staff } = ctx;
