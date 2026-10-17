@@ -1,0 +1,796 @@
+-- =====================================================================
+-- AeroGlobETec · Plataforma de proyectos
+-- Esquema de Supabase: tablas, permisos (RLS), triggers y almacenamiento.
+--
+-- Cómo usarlo: en el panel de Supabase, SQL Editor → pegar todo → Run.
+-- Se puede volver a correr: borra y recrea las funciones y políticas.
+-- =====================================================================
+
+
+-- ---------------------------------------------------------------------
+-- Tipos
+-- ---------------------------------------------------------------------
+do $$ begin
+  create type public.user_role as enum ('docente', 'lider', 'estudiante');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.task_status as enum ('pendiente', 'en_curso', 'en_revision', 'hecha');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.update_status as enum ('pendiente', 'aprobado', 'cambios');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.item_status as enum ('necesario', 'pedido', 'recibido', 'en_uso');
+exception when duplicate_object then null; end $$;
+
+-- ---------------------------------------------------------------------
+-- Tablas
+-- ---------------------------------------------------------------------
+create table if not exists public.profiles (
+  id          uuid primary key references auth.users(id) on delete cascade,
+  email       text not null unique,
+  full_name   text not null default '',
+  avatar_url  text,
+  role        public.user_role not null default 'estudiante',
+  created_at  timestamptz not null default now()
+);
+
+-- Administradores: tienen todos los permisos y pueden dar cualquier rol.
+-- Solo se edita desde el SQL Editor de Supabase (no hay permisos de escritura desde la web).
+create table if not exists public.admins (
+  email     text primary key check (email = lower(email)),
+  added_at  timestamptz not null default now()
+);
+
+insert into public.admins (email) values ('mal.gimenez@alumno.etec.um.edu.ar')
+on conflict (email) do nothing;
+
+create table if not exists public.projects (
+  id           uuid primary key default gen_random_uuid(),
+  name         text not null check (length(trim(name)) > 0),
+  description  text not null default '',
+  color        text not null default '#3774bc',
+  archived     boolean not null default false,
+  created_by   uuid references public.profiles(id) on delete set null,
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists public.project_members (
+  project_id  uuid not null references public.projects(id) on delete cascade,
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  added_at    timestamptz not null default now(),
+  primary key (project_id, user_id)
+);
+
+create table if not exists public.areas (
+  id           uuid primary key default gen_random_uuid(),
+  project_id   uuid not null references public.projects(id) on delete cascade,
+  name         text not null check (length(trim(name)) > 0),
+  description  text not null default '',
+  color        text not null default '#7caef3',
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists public.area_members (
+  area_id  uuid not null references public.areas(id) on delete cascade,
+  user_id  uuid not null references public.profiles(id) on delete cascade,
+  primary key (area_id, user_id)
+);
+
+create table if not exists public.milestones (
+  id          uuid primary key default gen_random_uuid(),
+  project_id  uuid not null references public.projects(id) on delete cascade,
+  title       text not null check (length(trim(title)) > 0),
+  due_date    date not null,
+  done        boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists public.tasks (
+  id            uuid primary key default gen_random_uuid(),
+  project_id    uuid not null references public.projects(id) on delete cascade,
+  area_id       uuid references public.areas(id) on delete set null,
+  milestone_id  uuid references public.milestones(id) on delete set null,
+  title         text not null check (length(trim(title)) > 0),
+  description   text not null default '',
+  status        public.task_status not null default 'pendiente',
+  priority      smallint not null default 2 check (priority between 1 and 3),
+  assignee_id   uuid references public.profiles(id) on delete set null,
+  due_date      date,
+  completed_at  timestamptz,
+  created_by    uuid references public.profiles(id) on delete set null,
+  created_at    timestamptz not null default now()
+);
+
+-- Avances que suben los estudiantes
+create table if not exists public.updates (
+  id           uuid primary key default gen_random_uuid(),
+  project_id   uuid not null references public.projects(id) on delete cascade,
+  area_id      uuid references public.areas(id) on delete set null,
+  task_id      uuid references public.tasks(id) on delete set null,
+  author_id    uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  title        text not null check (length(trim(title)) > 0),
+  body         text not null default '',
+  attachments  jsonb not null default '[]'::jsonb,  -- [{path, name, size}]
+  status       public.update_status not null default 'pendiente',
+  score        smallint check (score between 1 and 10),
+  feedback     text not null default '',
+  reviewed_by  uuid references public.profiles(id) on delete set null,
+  reviewed_at  timestamptz,
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists public.comments (
+  id          uuid primary key default gen_random_uuid(),
+  update_id   uuid not null references public.updates(id) on delete cascade,
+  author_id   uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  body        text not null check (length(trim(body)) > 0),
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists public.project_files (
+  id           uuid primary key default gen_random_uuid(),
+  project_id   uuid not null references public.projects(id) on delete cascade,
+  path         text not null unique,
+  name         text not null,
+  size         bigint not null default 0,
+  folder       text not null default 'General',
+  uploaded_by  uuid default auth.uid() references public.profiles(id) on delete set null,
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists public.inventory (
+  id              uuid primary key default gen_random_uuid(),
+  project_id      uuid not null references public.projects(id) on delete cascade,
+  name            text not null check (length(trim(name)) > 0),
+  quantity        integer not null default 1 check (quantity >= 0),
+  unit_cost       numeric(12,2) not null default 0 check (unit_cost >= 0),
+  status          public.item_status not null default 'necesario',
+  responsible_id  uuid references public.profiles(id) on delete set null,
+  link            text not null default '',
+  notes           text not null default '',
+  created_at      timestamptz not null default now()
+);
+
+-- Bitácora: la llenan los triggers, nadie escribe a mano
+create table if not exists public.activity (
+  id          bigint generated always as identity primary key,
+  project_id  uuid not null references public.projects(id) on delete cascade,
+  actor_id    uuid references public.profiles(id) on delete set null,
+  kind        text not null,
+  message     text not null,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists public.notifications (
+  id          bigint generated always as identity primary key,
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  project_id  uuid references public.projects(id) on delete cascade,
+  message     text not null,
+  link        text not null default '',
+  read        boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists tasks_project_idx on public.tasks(project_id);
+create index if not exists tasks_assignee_idx on public.tasks(assignee_id);
+create index if not exists updates_project_idx on public.updates(project_id);
+create index if not exists updates_author_idx on public.updates(author_id);
+create index if not exists activity_project_idx on public.activity(project_id, created_at desc);
+create index if not exists notifications_user_idx on public.notifications(user_id, read, created_at desc);
+
+-- ---------------------------------------------------------------------
+-- Funciones de permisos
+-- ---------------------------------------------------------------------
+
+create or replace function public.is_admin() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from profiles p join admins a on a.email = p.email where p.id = auth.uid());
+$$;
+
+-- Docentes, estudiantes líderes y admins tienen los mismos permisos en los proyectos
+create or replace function public.is_staff() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.is_admin()
+      or exists (select 1 from profiles where id = auth.uid() and role in ('docente', 'lider'));
+$$;
+
+-- Pueden cambiar roles: docentes y admins
+create or replace function public.is_docente() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.is_admin()
+      or exists (select 1 from profiles where id = auth.uid() and role = 'docente');
+$$;
+
+create or replace function public.can_view_project(p uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.is_staff()
+      or exists (select 1 from project_members where project_id = p and user_id = auth.uid());
+$$;
+
+-- ---------------------------------------------------------------------
+-- Alta de usuarios: solo cuentas de la ETec
+-- ---------------------------------------------------------------------
+create or replace function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  domain text := lower(split_part(new.email, '@', 2));
+  r public.user_role;
+begin
+  if domain = 'etec.um.edu.ar' then
+    r := 'docente';
+  elsif domain = 'alumno.etec.um.edu.ar' then
+    r := 'estudiante';
+  else
+    raise exception 'Solo se permiten cuentas @etec.um.edu.ar o @alumno.etec.um.edu.ar';
+  end if;
+
+  insert into profiles (id, email, full_name, avatar_url, role)
+  values (
+    new.id,
+    lower(new.email),
+    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    new.raw_user_meta_data->>'avatar_url',
+    r
+  );
+  return new;
+end $$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Cuentas creadas antes de cargar este esquema: se les crea el perfil si el dominio es válido
+insert into public.profiles (id, email, full_name, avatar_url, role)
+select
+  u.id,
+  lower(u.email),
+  coalesce(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name', split_part(u.email, '@', 1)),
+  u.raw_user_meta_data->>'avatar_url',
+  case lower(split_part(u.email, '@', 2)) when 'etec.um.edu.ar' then 'docente' else 'estudiante' end::public.user_role
+from auth.users u
+where lower(split_part(u.email, '@', 2)) in ('etec.um.edu.ar', 'alumno.etec.um.edu.ar')
+on conflict (id) do nothing;
+
+-- Nadie puede cambiarse su propio rol ni su email; los roles los cambia un docente.
+-- Un admin puede dar cualquier rol, incluso docente.
+create or replace function public.guard_profile() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then return new; end if;  -- cambios desde el panel de Supabase
+  if new.email <> old.email then
+    raise exception 'El email no se puede cambiar';
+  end if;
+  if new.role <> old.role and not public.is_docente() then
+    raise exception 'Solo un docente puede cambiar roles';
+  end if;
+  if new.role <> old.role and public.is_admin() then
+    return new;
+  end if;
+  if new.role <> old.role and old.role = 'docente' then
+    raise exception 'El rol docente lo da el dominio del email';
+  end if;
+  if new.role <> old.role and new.role = 'docente' then
+    raise exception 'El rol docente lo da el dominio del email';
+  end if;
+  if new.id <> auth.uid() and (new.full_name <> old.full_name or new.avatar_url is distinct from old.avatar_url) then
+    raise exception 'Solo podés editar tu propio perfil';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_profile on public.profiles;
+create trigger guard_profile before update on public.profiles
+  for each row execute function public.guard_profile();
+
+-- ---------------------------------------------------------------------
+-- Reglas de negocio
+-- ---------------------------------------------------------------------
+
+-- Quien crea un proyecto queda como miembro
+create or replace function public.project_after_insert() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.created_by is not null then
+    insert into project_members (project_id, user_id) values (new.id, new.created_by)
+    on conflict do nothing;
+  end if;
+  return new;
+end $$;
+
+create or replace function public.project_before_insert() returns trigger
+language plpgsql as $$
+begin
+  new.created_by := coalesce(auth.uid(), new.created_by);
+  return new;
+end $$;
+
+drop trigger if exists project_before_insert on public.projects;
+create trigger project_before_insert before insert on public.projects
+  for each row execute function public.project_before_insert();
+drop trigger if exists project_after_insert on public.projects;
+create trigger project_after_insert after insert on public.projects
+  for each row execute function public.project_after_insert();
+
+-- Un área solo puede tener miembros del proyecto
+create or replace function public.check_area_member() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (
+    select 1 from areas a join project_members m on m.project_id = a.project_id
+    where a.id = new.area_id and m.user_id = new.user_id
+  ) then
+    raise exception 'La persona tiene que ser miembro del proyecto antes de sumarla a un área';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists check_area_member on public.area_members;
+create trigger check_area_member before insert or update on public.area_members
+  for each row execute function public.check_area_member();
+
+-- Tareas: los estudiantes solo pueden mover el estado de sus propias tareas,
+-- y nunca a "hecha" (eso lo confirma un docente o líder).
+create or replace function public.guard_task() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'INSERT' then
+    new.created_by := coalesce(auth.uid(), new.created_by);
+  end if;
+
+  if new.area_id is not null and not exists (select 1 from areas where id = new.area_id and project_id = new.project_id) then
+    raise exception 'El área no pertenece a este proyecto';
+  end if;
+  if new.milestone_id is not null and not exists (select 1 from milestones where id = new.milestone_id and project_id = new.project_id) then
+    raise exception 'El hito no pertenece a este proyecto';
+  end if;
+  if new.assignee_id is not null and not exists (select 1 from project_members where project_id = new.project_id and user_id = new.assignee_id) then
+    raise exception 'La persona asignada no es miembro del proyecto';
+  end if;
+
+  if tg_op = 'UPDATE' and auth.uid() is not null and not public.is_staff() then
+    if (new.project_id, new.area_id, new.milestone_id, new.title, new.description, new.priority, new.assignee_id, new.due_date)
+       is distinct from
+       (old.project_id, old.area_id, old.milestone_id, old.title, old.description, old.priority, old.assignee_id, old.due_date) then
+      raise exception 'Solo podés cambiar el estado de tus tareas';
+    end if;
+    if new.status = 'hecha' and old.status <> 'hecha' then
+      raise exception 'Mandala a revisión: un docente o líder la marca como hecha';
+    end if;
+    if old.status = 'hecha' and new.status <> 'hecha' then
+      raise exception 'Esta tarea ya está hecha: solo un docente o líder la puede reabrir';
+    end if;
+  end if;
+
+  if new.status = 'hecha' and (tg_op = 'INSERT' or old.status <> 'hecha') then
+    new.completed_at := now();
+  elsif new.status <> 'hecha' then
+    new.completed_at := null;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_task on public.tasks;
+create trigger guard_task before insert or update on public.tasks
+  for each row execute function public.guard_task();
+
+-- Avances: el autor puede editar mientras no esté revisado;
+-- solo docentes y líderes ponen estado, nota y devolución.
+create or replace function public.guard_update() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'INSERT' then
+    new.author_id := coalesce(auth.uid(), new.author_id);
+    new.status := 'pendiente';
+    new.score := null;
+    new.feedback := '';
+    new.reviewed_by := null;
+    new.reviewed_at := null;
+    if new.area_id is not null and not exists (select 1 from areas where id = new.area_id and project_id = new.project_id) then
+      raise exception 'El área no pertenece a este proyecto';
+    end if;
+    if new.task_id is not null and not exists (select 1 from tasks where id = new.task_id and project_id = new.project_id) then
+      raise exception 'La tarea no pertenece a este proyecto';
+    end if;
+    return new;
+  end if;
+
+  if new.author_id <> old.author_id or new.project_id <> old.project_id then
+    raise exception 'No se puede cambiar el autor ni el proyecto de un avance';
+  end if;
+
+  if (new.status, new.score, new.feedback) is distinct from (old.status, old.score, old.feedback) then
+    if auth.uid() is not null and not public.is_staff() then
+      raise exception 'Solo un docente o líder puede revisar avances';
+    end if;
+    new.reviewed_by := auth.uid();
+    new.reviewed_at := now();
+    if new.status = 'pendiente' then
+      new.reviewed_by := null; new.reviewed_at := null;
+    end if;
+  elsif auth.uid() is not null and not public.is_staff() then
+    if old.status = 'aprobado' then
+      raise exception 'Este avance ya fue aprobado y no se puede editar';
+    end if;
+    -- si lo corrige después de un pedido de cambios, vuelve a revisión
+    new.status := 'pendiente';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_update on public.updates;
+create trigger guard_update before insert or update on public.updates
+  for each row execute function public.guard_update();
+
+create or replace function public.guard_inventory() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.responsible_id is not null and not exists (select 1 from project_members where project_id = new.project_id and user_id = new.responsible_id) then
+    raise exception 'La persona responsable no es miembro del proyecto';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_inventory on public.inventory;
+create trigger guard_inventory before insert or update on public.inventory
+  for each row execute function public.guard_inventory();
+
+-- ---------------------------------------------------------------------
+-- Bitácora y notificaciones automáticas
+-- ---------------------------------------------------------------------
+create or replace function public.log_activity(p uuid, k text, msg text) returns void
+language sql security definer set search_path = public as $$
+  insert into activity (project_id, actor_id, kind, message) values (p, auth.uid(), k, msg);
+$$;
+
+create or replace function public.notify(u uuid, p uuid, msg text, lnk text) returns void
+language sql security definer set search_path = public as $$
+  insert into notifications (user_id, project_id, message, link)
+  select u, p, msg, lnk where u is not null and u is distinct from auth.uid();
+$$;
+
+create or replace function public.display_name(u uuid) returns text
+language sql stable security definer set search_path = public as $$
+  select coalesce(nullif(full_name, ''), email) from profiles where id = u;
+$$;
+
+create or replace function public.track_tasks() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  lnk text := '#/proyecto/' || new.project_id || '/tareas';
+begin
+  if tg_op = 'INSERT' then
+    perform log_activity(new.project_id, 'tarea', 'Creó la tarea "' || new.title || '"');
+    perform notify(new.assignee_id, new.project_id, 'Te asignaron la tarea "' || new.title || '"', lnk);
+  else
+    if new.assignee_id is distinct from old.assignee_id then
+      perform notify(new.assignee_id, new.project_id, 'Te asignaron la tarea "' || new.title || '"', lnk);
+    end if;
+    if new.status <> old.status then
+      perform log_activity(new.project_id, 'tarea',
+        'Movió "' || new.title || '" a ' || replace(new.status::text, '_', ' '));
+      if new.status = 'en_revision' then
+        perform notify(new.created_by, new.project_id, '"' || new.title || '" está lista para revisar', lnk);
+      elsif new.status = 'hecha' then
+        perform notify(new.assignee_id, new.project_id, 'Tu tarea "' || new.title || '" quedó como hecha', lnk);
+      end if;
+    end if;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists track_tasks on public.tasks;
+create trigger track_tasks after insert or update on public.tasks
+  for each row execute function public.track_tasks();
+
+create or replace function public.track_updates() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  lnk text := '#/proyecto/' || new.project_id || '/avances';
+begin
+  if tg_op = 'INSERT' then
+    perform log_activity(new.project_id, 'avance', 'Subió el avance "' || new.title || '"');
+  elsif new.status <> old.status and new.status <> 'pendiente' then
+    perform log_activity(new.project_id, 'revision',
+      case new.status when 'aprobado' then 'Aprobó' else 'Pidió cambios en' end
+      || ' el avance "' || new.title || '" de ' || display_name(new.author_id));
+    perform notify(new.author_id, new.project_id,
+      case new.status when 'aprobado' then 'Aprobaron tu avance "' else 'Pidieron cambios en tu avance "' end
+      || new.title || '"', lnk);
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists track_updates on public.updates;
+create trigger track_updates after insert or update on public.updates
+  for each row execute function public.track_updates();
+
+create or replace function public.track_comments() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  u record;
+begin
+  select project_id, author_id, title into u from updates where id = new.update_id;
+  perform notify(u.author_id, u.project_id, 'Nuevo comentario en tu avance "' || u.title || '"',
+    '#/proyecto/' || u.project_id || '/avances');
+  return new;
+end $$;
+
+drop trigger if exists track_comments on public.comments;
+create trigger track_comments after insert on public.comments
+  for each row execute function public.track_comments();
+
+create or replace function public.track_members() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'INSERT' then
+    perform log_activity(new.project_id, 'equipo', 'Sumó a ' || display_name(new.user_id) || ' al proyecto');
+    perform notify(new.user_id, new.project_id,
+      'Te sumaron al proyecto "' || (select name from projects where id = new.project_id) || '"',
+      '#/proyecto/' || new.project_id);
+    return new;
+  else
+    if exists (select 1 from projects where id = old.project_id) then
+      perform log_activity(old.project_id, 'equipo', 'Sacó a ' || display_name(old.user_id) || ' del proyecto');
+    end if;
+    return old;
+  end if;
+end $$;
+
+drop trigger if exists track_members on public.project_members;
+create trigger track_members after insert or delete on public.project_members
+  for each row execute function public.track_members();
+
+create or replace function public.track_simple() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_table_name = 'milestones' then
+    if tg_op = 'INSERT' then
+      perform log_activity(new.project_id, 'hito', 'Agregó el hito "' || new.title || '"');
+    elsif new.done and not old.done then
+      perform log_activity(new.project_id, 'hito', 'Cumplió el hito "' || new.title || '"');
+    end if;
+  elsif tg_table_name = 'project_files' then
+    perform log_activity(new.project_id, 'archivo', 'Subió el archivo "' || new.name || '"');
+  elsif tg_table_name = 'inventory' then
+    if tg_op = 'INSERT' then
+      perform log_activity(new.project_id, 'inventario', 'Agregó "' || new.name || '" al inventario');
+    elsif new.status <> old.status then
+      perform log_activity(new.project_id, 'inventario', '"' || new.name || '" pasó a ' || replace(new.status::text, '_', ' '));
+    end if;
+  elsif tg_table_name = 'areas' then
+    perform log_activity(new.project_id, 'area', 'Creó el área "' || new.name || '"');
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists track_milestones on public.milestones;
+create trigger track_milestones after insert or update on public.milestones
+  for each row execute function public.track_simple();
+drop trigger if exists track_files on public.project_files;
+create trigger track_files after insert on public.project_files
+  for each row execute function public.track_simple();
+drop trigger if exists track_inventory on public.inventory;
+create trigger track_inventory after insert or update on public.inventory
+  for each row execute function public.track_simple();
+drop trigger if exists track_areas on public.areas;
+create trigger track_areas after insert on public.areas
+  for each row execute function public.track_simple();
+
+-- ---------------------------------------------------------------------
+-- Rendimiento
+-- Puntaje orientativo de 0 a 100:
+--   50 % cumplimiento: tareas hechas / tareas asignadas
+--   30 % calidad: nota promedio de avances aprobados (sobre 10)
+--   20 % puntualidad: tareas hechas a tiempo / tareas hechas
+-- Los estudiantes solo ven su propia fila; docentes y líderes ven todas.
+-- ---------------------------------------------------------------------
+create or replace function public.student_performance(p uuid)
+returns table (
+  user_id uuid, full_name text, email text,
+  tasks_assigned int, tasks_done int, tasks_on_time int, tasks_overdue int,
+  updates_total int, updates_approved int, avg_score numeric, score int
+)
+language sql stable security definer set search_path = public as $$
+  with base as (
+    select
+      m.user_id,
+      count(t.id)                                                                    as assigned,
+      count(t.id) filter (where t.status = 'hecha')                                  as done,
+      count(t.id) filter (where t.status = 'hecha' and (t.due_date is null or t.completed_at::date <= t.due_date)) as on_time,
+      count(t.id) filter (where t.status <> 'hecha' and t.due_date < current_date)   as overdue
+    from project_members m
+    left join tasks t on t.project_id = m.project_id and t.assignee_id = m.user_id
+    where m.project_id = p
+    group by m.user_id
+  ), ups as (
+    select
+      u.author_id as user_id,
+      count(*)                                       as total,
+      count(*) filter (where u.status = 'aprobado')  as approved,
+      avg(u.score) filter (where u.status = 'aprobado' and u.score is not null) as avg_score
+    from updates u
+    where u.project_id = p
+    group by u.author_id
+  )
+  select
+    b.user_id, pr.full_name, pr.email,
+    b.assigned::int, b.done::int, b.on_time::int, b.overdue::int,
+    coalesce(x.total, 0)::int, coalesce(x.approved, 0)::int, round(x.avg_score, 1),
+    case when b.assigned = 0 and x.avg_score is null then null else round(
+      (case when b.assigned > 0 then 50.0 * b.done / b.assigned else 0 end
+       + case when x.avg_score is not null then 3.0 * x.avg_score else 0 end
+       + case when b.done > 0 then 20.0 * b.on_time / b.done else 0 end)
+      * 100.0 / (case when b.assigned > 0 then 70 else 0 end + case when x.avg_score is not null then 30 else 0 end)
+    )::int end
+  from base b
+  join profiles pr on pr.id = b.user_id
+  left join ups x on x.user_id = b.user_id
+  where public.can_view_project(p)
+    and (public.is_staff() or b.user_id = auth.uid())
+  order by pr.full_name;
+$$;
+
+-- Resumen por área (equipo). Lo ve cualquier miembro del proyecto: son totales, no datos personales.
+create or replace function public.area_performance(p uuid)
+returns table (
+  area_id uuid, area_name text, color text, members int,
+  tasks_total int, tasks_done int, tasks_overdue int,
+  updates_total int, updates_approved int, avg_score numeric, progress int
+)
+language sql stable security definer set search_path = public as $$
+  select
+    a.id, a.name, a.color,
+    (select count(*) from area_members am where am.area_id = a.id)::int,
+    (select count(*) from tasks t where t.area_id = a.id)::int,
+    (select count(*) from tasks t where t.area_id = a.id and t.status = 'hecha')::int,
+    (select count(*) from tasks t where t.area_id = a.id and t.status <> 'hecha' and t.due_date < current_date)::int,
+    (select count(*) from updates u where u.area_id = a.id)::int,
+    (select count(*) from updates u where u.area_id = a.id and u.status = 'aprobado')::int,
+    (select round(avg(u.score), 1) from updates u where u.area_id = a.id and u.status = 'aprobado'),
+    (select case when count(*) = 0 then 0 else (100.0 * count(*) filter (where t.status = 'hecha') / count(*))::int end
+       from tasks t where t.area_id = a.id)
+  from areas a
+  where a.project_id = p and public.can_view_project(p)
+  order by a.name;
+$$;
+
+-- ---------------------------------------------------------------------
+-- Row Level Security
+-- ---------------------------------------------------------------------
+alter table public.profiles        enable row level security;
+alter table public.admins          enable row level security;
+alter table public.projects        enable row level security;
+alter table public.project_members enable row level security;
+alter table public.areas           enable row level security;
+alter table public.area_members    enable row level security;
+alter table public.milestones      enable row level security;
+alter table public.tasks           enable row level security;
+alter table public.updates         enable row level security;
+alter table public.comments        enable row level security;
+alter table public.project_files   enable row level security;
+alter table public.inventory       enable row level security;
+alter table public.activity        enable row level security;
+alter table public.notifications   enable row level security;
+
+do $$
+declare r record;
+begin
+  for r in select policyname, tablename from pg_policies where schemaname = 'public' loop
+    execute format('drop policy %I on public.%I', r.policyname, r.tablename);
+  end loop;
+end $$;
+
+-- Perfiles: todos los usuarios logueados ven nombres; cada uno edita el suyo, los docentes cambian roles
+create policy profiles_select on public.profiles for select to authenticated using (true);
+create policy admins_select on public.admins for select to authenticated using (true);
+create policy profiles_update on public.profiles for update to authenticated
+  using (id = auth.uid() or public.is_docente()) with check (id = auth.uid() or public.is_docente());
+
+-- Proyectos
+create policy projects_select on public.projects for select to authenticated using (public.can_view_project(id));
+create policy projects_insert on public.projects for insert to authenticated with check (public.is_staff());
+create policy projects_update on public.projects for update to authenticated using (public.is_staff()) with check (public.is_staff());
+create policy projects_delete on public.projects for delete to authenticated using (public.is_staff());
+
+-- Miembros, áreas e hitos: los ven los miembros, los gestionan docentes y líderes
+create policy members_select on public.project_members for select to authenticated using (public.can_view_project(project_id));
+create policy members_write  on public.project_members for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+create policy areas_select on public.areas for select to authenticated using (public.can_view_project(project_id));
+create policy areas_write  on public.areas for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+create policy area_members_select on public.area_members for select to authenticated
+  using (exists (select 1 from public.areas a where a.id = area_id and public.can_view_project(a.project_id)));
+create policy area_members_write on public.area_members for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+create policy milestones_select on public.milestones for select to authenticated using (public.can_view_project(project_id));
+create policy milestones_write  on public.milestones for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+-- Tareas: las crean docentes y líderes; cada estudiante mueve el estado de las suyas
+create policy tasks_select on public.tasks for select to authenticated using (public.can_view_project(project_id));
+create policy tasks_insert on public.tasks for insert to authenticated with check (public.is_staff());
+create policy tasks_update on public.tasks for update to authenticated
+  using (public.is_staff() or assignee_id = auth.uid())
+  with check (public.is_staff() or assignee_id = auth.uid());
+create policy tasks_delete on public.tasks for delete to authenticated using (public.is_staff());
+
+-- Avances
+create policy updates_select on public.updates for select to authenticated using (public.can_view_project(project_id));
+create policy updates_insert on public.updates for insert to authenticated
+  with check (public.can_view_project(project_id) and author_id = auth.uid());
+create policy updates_update on public.updates for update to authenticated
+  using (public.is_staff() or author_id = auth.uid())
+  with check (public.is_staff() or author_id = auth.uid());
+create policy updates_delete on public.updates for delete to authenticated
+  using (public.is_staff() or (author_id = auth.uid() and status <> 'aprobado'));
+
+-- Comentarios
+create policy comments_select on public.comments for select to authenticated
+  using (exists (select 1 from public.updates u where u.id = update_id and public.can_view_project(u.project_id)));
+create policy comments_insert on public.comments for insert to authenticated
+  with check (author_id = auth.uid() and exists (select 1 from public.updates u where u.id = update_id and public.can_view_project(u.project_id)));
+create policy comments_delete on public.comments for delete to authenticated
+  using (author_id = auth.uid() or public.is_staff());
+
+-- Archivos del proyecto
+create policy files_select on public.project_files for select to authenticated using (public.can_view_project(project_id));
+create policy files_insert on public.project_files for insert to authenticated
+  with check (public.can_view_project(project_id) and uploaded_by = auth.uid());
+create policy files_delete on public.project_files for delete to authenticated
+  using (public.is_staff() or uploaded_by = auth.uid());
+
+-- Inventario: cualquier miembro agrega y actualiza; borran docentes y líderes
+create policy inventory_select on public.inventory for select to authenticated using (public.can_view_project(project_id));
+create policy inventory_insert on public.inventory for insert to authenticated with check (public.can_view_project(project_id));
+create policy inventory_update on public.inventory for update to authenticated
+  using (public.can_view_project(project_id)) with check (public.can_view_project(project_id));
+create policy inventory_delete on public.inventory for delete to authenticated using (public.is_staff());
+
+-- Bitácora: solo lectura
+create policy activity_select on public.activity for select to authenticated using (public.can_view_project(project_id));
+
+-- Notificaciones: cada uno las suyas
+create policy notifications_select on public.notifications for select to authenticated using (user_id = auth.uid());
+create policy notifications_update on public.notifications for update to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy notifications_delete on public.notifications for delete to authenticated using (user_id = auth.uid());
+
+-- Las funciones de permisos no se exponen a usuarios anónimos
+revoke execute on function public.student_performance(uuid) from public, anon;
+revoke execute on function public.area_performance(uuid) from public, anon;
+grant execute on function public.student_performance(uuid) to authenticated;
+grant execute on function public.area_performance(uuid) to authenticated;
+revoke execute on function public.log_activity(uuid, text, text) from public, anon, authenticated;
+revoke execute on function public.notify(uuid, uuid, text, text) from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- Almacenamiento de archivos (bucket privado "proyectos")
+-- Rutas: <project_id>/avances/<archivo> o <project_id>/archivos/<archivo>
+-- ---------------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('proyectos', 'proyectos', false, 52428800)  -- 50 MB por archivo
+on conflict (id) do nothing;
+
+create or replace function public.storage_project(path text) returns uuid
+language plpgsql immutable as $$
+begin
+  return split_part(path, '/', 1)::uuid;
+exception when others then
+  return null;
+end $$;
+
+drop policy if exists proyectos_select on storage.objects;
+drop policy if exists proyectos_insert on storage.objects;
+drop policy if exists proyectos_delete on storage.objects;
+
+create policy proyectos_select on storage.objects for select to authenticated
+  using (bucket_id = 'proyectos' and public.can_view_project(public.storage_project(name)));
+create policy proyectos_insert on storage.objects for insert to authenticated
+  with check (bucket_id = 'proyectos' and public.can_view_project(public.storage_project(name)));
+create policy proyectos_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'proyectos' and (owner = auth.uid() or public.is_staff()));
