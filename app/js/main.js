@@ -1,17 +1,17 @@
 // Punto de entrada: elige la API (Supabase o demo), controla la sesión y el ruteo por hash.
-import { DEMO_MODE } from './config.js?v=202610172024';
-import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610172024';
-import { renderLogin } from './views/login.js?v=202610172024';
-import { renderDashboard } from './views/dashboard.js?v=202610172024';
-import { renderProject } from './views/project.js?v=202610172024';
-import { renderUsers } from './views/users.js?v=202610172024';
-import { renderReport } from './views/report.js?v=202610172024';
-import { renderTurnos } from './views/turnos.js?v=202610172024';
-import { renderSitio } from './views/sitio.js?v=202610172024';
-import { renderEventos } from './views/eventos.js?v=202610172024';
-import { renderEvento } from './views/evento.js?v=202610172024';
+import { DEMO_MODE } from './config.js?v=202610172052';
+import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610172052';
+import { renderLogin } from './views/login.js?v=202610172052';
+import { renderDashboard } from './views/dashboard.js?v=202610172052';
+import { renderProject } from './views/project.js?v=202610172052';
+import { renderUsers } from './views/users.js?v=202610172052';
+import { renderReport } from './views/report.js?v=202610172052';
+import { renderTurnos } from './views/turnos.js?v=202610172052';
+import { renderSitio } from './views/sitio.js?v=202610172052';
+import { renderEventos } from './views/eventos.js?v=202610172052';
+import { renderEvento } from './views/evento.js?v=202610172052';
 
-const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610172024') : await import('./api.js?v=202610172024');
+const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610172052') : await import('./api.js?v=202610172052');
 const app = document.getElementById('app');
 let me = null;
 

@@ -1,5 +1,5 @@
 // Turnos de equipos: agenda semanal para reservar impresora 3D, soldadora, etc. sin superponerse.
-import { esc, isStaff, options, field, openForm, confirmAction, toast, errorMessage, colorPicker, emptyState, COLORS } from '../ui.js?v=202610172024';
+import { esc, isStaff, options, field, openForm, confirmAction, toast, errorMessage, colorPicker, emptyState, COLORS } from '../ui.js?v=202610172052';
 
 const DAY_START = 8;   // la grilla va de 8 a 22 h
 const DAY_END = 22;

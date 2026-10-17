@@ -2,8 +2,8 @@
 import {
   esc, icon, name, avatar, isStaff, field, options, openForm, confirmAction, toast, errorMessage,
   fmtDate, daysUntil, dueLabel, fileSize, emptyState, embedUrl,
-} from '../ui.js?v=202610172024';
-import { KIND, EVENT_STATUS, editEvent } from './eventos.js?v=202610172024';
+} from '../ui.js?v=202610172052';
+import { KIND, EVENT_STATUS, editEvent } from './eventos.js?v=202610172052';
 
 const MATERIAL = {
   presentacion: ['Presentaciones', 'presentation'],

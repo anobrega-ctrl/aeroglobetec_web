@@ -130,6 +130,66 @@ img[data-aero-image].aero-image-hidden{display:none!important}
   url: "https://nveisqekmbcdvnuebice.supabase.co",
   anonKey: "sb_publishable_Pjsh0xgZGNLchNWWNvTmfw_NllsCUSY"
 };</script>
+<style id="aero-trayectoria-css">
+/* Trayectoria: lista de salidas y una página por entrada */
+.tr-stats{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 30px}
+.tr-stats div{display:flex;align-items:baseline;gap:8px;background:#fff;border:1px solid #dae5f4;border-radius:14px;padding:14px 20px}
+.tr-stats b{font-family:var(--display);font-size:30px;letter-spacing:-.04em;color:#173a69}
+.tr-stats span{color:var(--muted);font-size:14px}
+.tr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.tr-card{display:flex;flex-direction:column;background:#fff;border:1px solid #dae5f4;border-radius:18px;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s}
+.tr-card:hover{transform:translateY(-6px);box-shadow:0 25px 45px rgba(30,58,104,.10)}
+.tr-cover{position:relative;aspect-ratio:16/10;background:linear-gradient(140deg,#0d2347,#1d4f8f);display:grid;place-items:center;overflow:hidden}
+.tr-cover img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
+.tr-card:hover .tr-cover img{transform:scale(1.04)}
+.tr-cover-icon{color:#9cc4f5;opacity:.75}
+.tr-cover-icon svg{width:46px;height:46px}
+.tr-kind{position:absolute;left:14px;top:14px;background:rgba(5,11,27,.78);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.tr-card-body{display:flex;flex-direction:column;gap:8px;padding:20px 22px 24px;flex:1}
+.tr-meta{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.tr-meta svg{width:15px;height:15px;flex:none}
+.tr-card h3{font-size:23px;line-height:1.2;margin:2px 0 0;color:var(--ink)}
+.tr-card p{margin:0;color:#596c83;font-size:14.5px;line-height:1.65}
+.tr-prize{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;margin-top:auto;background:#fff4dc;color:#7a4b00;border:1px solid #f3dca6;font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px}
+.tr-card p+.tr-prize,.tr-card h3+.tr-prize{margin-top:8px}
+.tr-prize svg{width:15px;height:15px;flex:none}
+.tr-back{display:inline-block;color:#9cc4f5;font-size:13px;font-weight:700;margin-bottom:18px}
+.tr-back:hover{color:#fff}
+.tr-back.dark{color:#3d78c0;margin:40px 0 0}
+.tr-back.dark:hover{color:#173a69}
+.tr-hero-photo{margin:0 0 40px;border-radius:20px;overflow:hidden;max-height:520px;background:#0d2347}
+.tr-hero-photo img{width:100%;max-height:520px;object-fit:cover}
+.tr-detail{display:grid;grid-template-columns:1fr 320px;gap:50px;align-items:start}
+.tr-text p:not(.overline){color:#3f526b;font-size:16.5px;margin:0 0 18px}
+.tr-text ul{margin:0 0 18px;padding-left:22px;color:#3f526b;font-size:16.5px;line-height:1.8}
+.tr-info{display:flex;flex-direction:column;gap:16px;background:#fff;border:1px solid #dae5f4;border-radius:18px;padding:24px;position:sticky;top:calc(var(--header) + 20px)}
+.tr-info>div,.tr-info>a{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--ink)}
+.tr-info svg{width:20px;height:20px;flex:none;color:#3d78c0;margin-top:2px}
+.tr-info small{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.tr-info-prize{background:#fff4dc;border-radius:12px;padding:12px;margin:0 -6px}
+.tr-info-prize svg{color:#b07100}
+.tr-info>a{color:#3d78c0;font-weight:700;border-top:1px solid #e3ebf6;padding-top:16px}
+.tr-info>a+a{border-top:none;padding-top:0}
+.tr-block{margin-top:50px}
+.tr-video{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;max-width:880px}
+.tr-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.tr-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tr-gallery button{padding:0;border:0;border-radius:14px;overflow:hidden;background:#dbe5f3;aspect-ratio:4/3;cursor:zoom-in}
+.tr-gallery img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease)}
+.tr-gallery button:hover img{transform:scale(1.05)}
+.tr-lightbox{border:0;padding:0;background:transparent;max-width:100vw;max-height:100vh;width:100vw;height:100vh;display:none;place-items:center}
+.tr-lightbox[open]{display:grid}
+.tr-lightbox::backdrop{background:rgba(3,8,20,.92)}
+.tr-lightbox img{max-width:min(92vw,1400px);max-height:86vh;object-fit:contain;border-radius:10px}
+.tr-lightbox button{position:fixed;width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(10,20,40,.7);color:#fff;font-size:26px;line-height:1;display:grid;place-items:center}
+.tr-lightbox button:hover{background:rgba(40,70,120,.85)}
+.tr-lb-close{top:18px;right:18px;font-size:18px!important}
+.tr-lb-prev{left:18px;top:50%;transform:translateY(-50%)}
+.tr-lb-next{right:18px;top:50%;transform:translateY(-50%)}
+.tr-lightbox.single .tr-lb-prev,.tr-lightbox.single .tr-lb-next{display:none}
+@media(max-width:1000px){.tr-grid{grid-template-columns:repeat(2,1fr)}.tr-detail{grid-template-columns:1fr;gap:30px}.tr-info{position:static}}
+@media(max-width:640px){.tr-grid{grid-template-columns:1fr}.tr-gallery{grid-template-columns:repeat(2,1fr);gap:8px}.tr-stats div{padding:10px 14px}.tr-stats b{font-size:24px}.tr-lb-prev,.tr-lb-next{top:auto!important;bottom:18px;transform:none!important}}
+</style>
 <style id="ajustes-diseno">
 /* Ajustes de diseño (2026-10): menos decoración, más lectura.
    Solo estilos: no cambia el HTML ni los textos que maneja el editor del sitio. */
@@ -658,6 +718,235 @@ h1,h2,h3{letter-spacing:-.025em}
     const roots = [document, document.getElementById('vista-profes')?.content].filter(Boolean);
     roots.forEach((root) => root.querySelectorAll('.teacher-card .role[data-es]').forEach((el) => { el.textContent = el.dataset[l] || el.dataset.es; }));
   }, 0)));
+})();
+</script>
+<script id="aero-trayectoria">
+(() => {
+  // Trayectoria: dónde estuvimos, qué hicimos y qué ganamos. Se carga desde la base (la editan
+  // los docentes en la plataforma, Sitio web → Trayectoria). Arma la página #trayectoria y una
+  // página por entrada (#trayectoria-<slug>), y las suma al menú junto a las páginas del editor.
+  const cfg = window.AERO_BACKEND || {};
+  if (!/^https:\/\//.test(cfg.url || '') || !cfg.anonKey) return;
+  const CACHE = 'aero-trayectoria-cache';
+  const menu = document.getElementById('site-nav');
+  if (!menu) return;
+
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const https = (u) => /^https:\/\//.test(u || '');
+  const lang = () => { try { return localStorage.getItem('aeroglob-lang') === 'en' ? 'en' : 'es'; } catch (e) { return 'es'; } };
+  const T = {
+    es: { nav: 'Trayectoria', mark: 'Trayectoria', title: 'Dónde <em>estuvimos.</em>', intro: 'Competencias, ferias, charlas y visitas: qué hicimos en cada lugar y qué logramos.',
+      over: 'Recorrido del taller', heading: 'Cada salida, <em>un paso más.</em>', side: 'Tocá una tarjeta para ver las fotos y lo que hicimos.',
+      outings: (n) => n === 1 ? 'salida' : 'salidas', prizes: (n) => n === 1 ? 'logro' : 'logros', places: (n) => n === 1 ? 'lugar' : 'lugares',
+      back: '← Toda la trayectoria', what: 'Qué hicimos', gallery: 'Fotos', video: 'Video', when: 'Cuándo', where: 'Dónde', prize: 'Logro', more: 'Más información', to: 'al',
+      kinds: { competencia: 'Competencia', charla: 'Charla', feria: 'Feria', visita: 'Visita', otro: 'Salida' }, close: 'Cerrar', prev: 'Anterior', next: 'Siguiente' },
+    en: { nav: 'Track record', mark: 'Track record', title: 'Where <em>we have been.</em>', intro: 'Competitions, fairs, talks and visits: what we did in each place and what we achieved.',
+      over: 'Workshop journey', heading: 'Every trip, <em>one more step.</em>', side: 'Tap a card to see the photos and what we did.',
+      outings: (n) => n === 1 ? 'trip' : 'trips', prizes: (n) => n === 1 ? 'award' : 'awards', places: (n) => n === 1 ? 'place' : 'places',
+      back: '← Whole track record', what: 'What we did', gallery: 'Photos', video: 'Video', when: 'When', where: 'Where', prize: 'Achievement', more: 'More information', to: 'to',
+      kinds: { competencia: 'Competition', charla: 'Talk', feria: 'Fair', visita: 'Visit', otro: 'Trip' }, close: 'Close', prev: 'Previous', next: 'Next' },
+  };
+  const ICON = {
+    trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+    out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+  };
+
+  let list = [];
+  let ours = [];
+  let names = {};
+  let baseIds = null, baseNames = {};
+
+  // ---------- Textos ----------
+  const pick = (t, k, l) => (l === 'en' && t[k + '_en']) || t[k] || '';
+  function fmt(d, l) {
+    const x = new Date(d + 'T00:00:00');
+    return isNaN(x) ? '' : new Intl.DateTimeFormat(l === 'en' ? 'en-US' : 'es-AR', { day: 'numeric', month: 'long', year: 'numeric' }).format(x);
+  }
+  function when(t, l) {
+    if (!t.ends_on || t.ends_on === t.starts_on) return fmt(t.starts_on, l);
+    const a = new Date(t.starts_on + 'T00:00:00'), b = new Date(t.ends_on + 'T00:00:00');
+    if (a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()) {
+      const m = new Intl.DateTimeFormat(l === 'en' ? 'en-US' : 'es-AR', { month: 'long', year: 'numeric' }).format(a);
+      return l === 'en' ? `${m.split(' ')[0]} ${a.getDate()}–${b.getDate()}, ${a.getFullYear()}` : `${a.getDate()} al ${b.getDate()} de ${m}`;
+    }
+    return `${fmt(t.starts_on, l)} ${T[l].to} ${fmt(t.ends_on, l)}`;
+  }
+  // Párrafos separados por una línea en blanco; las líneas que empiezan con "- " son una lista
+  function body(src) {
+    return String(src || '').replace(/\r/g, '').split(/\n\s*\n/).map((block) => {
+      const lines = block.split('\n').filter((x) => x.trim());
+      if (!lines.length) return '';
+      if (lines.every((x) => /^\s*[-•]\s+/.test(x))) return '<ul>' + lines.map((x) => `<li>${esc(x.replace(/^\s*[-•]\s+/, ''))}</li>`).join('') + '</ul>';
+      return `<p>${lines.map(esc).join('<br/>')}</p>`;
+    }).join('');
+  }
+  function youtube(u) {
+    const m = String(u || '').match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/);
+    return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : '';
+  }
+
+  // ---------- Páginas ----------
+  function head(id, mark, title, intro, extra = '') {
+    return `<section class="chapter-head space-bg" data-nav-section="" id="${id}"><div aria-hidden="true" class="starfield"></div><div class="shell"><div class="chapter-wrap"><div data-reveal="">${extra}<p class="chapter-mark">${mark}</p><h2>${title}</h2><p class="chapter-deco">AeroGlobETec · ETec UM</p></div><p class="chapter-description" data-reveal="">${intro}</p></div></div></section>`;
+  }
+  function card(t, i, l) {
+    const cover = https(t.cover_url) ? `<img src="${esc(t.cover_url)}" alt="" loading="lazy"/>` : `<span class="tr-cover-icon">${ICON.trophy}</span>`;
+    const prize = pick(t, 'achievement', l);
+    return `<a class="tr-card" href="#trayectoria-${esc(t.slug)}" data-reveal="" style="--delay:${Math.min(i, 5) * 70}ms">`
+      + `<div class="tr-cover">${cover}<span class="tr-kind">${esc(T[l].kinds[t.kind] || T[l].kinds.otro)}</span></div>`
+      + `<div class="tr-card-body"><span class="tr-meta">${ICON.cal}${esc(when(t, l))}${t.place ? ` · ${esc(t.place)}` : ''}</span>`
+      + `<h3>${esc(pick(t, 'title', l))}</h3>${pick(t, 'summary', l) ? `<p>${esc(pick(t, 'summary', l))}</p>` : ''}`
+      + `${prize ? `<span class="tr-prize">${ICON.trophy}${esc(prize)}</span>` : ''}</div></a>`;
+  }
+  function listPage(l) {
+    const t = T[l];
+    const prizes = list.filter((x) => x.achievement).length;
+    const places = new Set(list.map((x) => x.place.trim().toLowerCase()).filter(Boolean)).size;
+    const stat = (n, label) => `<div><b>${n}</b><span>${label(n)}</span></div>`;
+    return head('trayectoria', esc(t.mark), t.title, esc(t.intro))
+      + `<section class="section"><div class="shell"><div class="section-top" data-reveal=""><div><p class="overline">${esc(t.over)}</p><h2>${t.heading}</h2></div><p>${esc(t.side)}</p></div>`
+      + `<div class="tr-stats" data-reveal="">${stat(list.length, t.outings)}${prizes ? stat(prizes, t.prizes) : ''}${places ? stat(places, t.places) : ''}</div>`
+      + `<div class="tr-grid">${list.map((x, i) => card(x, i, l)).join('')}</div></div></section>`;
+  }
+  function detailPage(x, l) {
+    const t = T[l];
+    const prize = pick(x, 'achievement', l);
+    const photos = (x.photos || []).filter(https);
+    const video = youtube(x.video_url);
+    const text = pick(x, 'body', l) || pick(x, 'summary', l);
+    const info = `<aside class="tr-info" data-reveal="">`
+      + `<div>${ICON.cal}<span><small>${esc(t.when)}</small>${esc(when(x, l))}</span></div>`
+      + (x.place ? `<div>${ICON.pin}<span><small>${esc(t.where)}</small>${esc(x.place)}</span></div>` : '')
+      + (prize ? `<div class="tr-info-prize">${ICON.trophy}<span><small>${esc(t.prize)}</small>${esc(prize)}</span></div>` : '')
+      + (https(x.link_url) ? `<a href="${esc(x.link_url)}" target="_blank" rel="noopener noreferrer">${ICON.out}${esc(t.more)}</a>` : '')
+      + (!video && https(x.video_url) ? `<a href="${esc(x.video_url)}" target="_blank" rel="noopener noreferrer">${ICON.out}${esc(t.video)}</a>` : '')
+      + `</aside>`;
+    const cover = https(x.cover_url) ? `<div class="tr-hero-photo" data-reveal=""><img src="${esc(x.cover_url)}" alt=""/></div>` : '';
+    return head('trayectoria-' + x.slug, `${esc(t.kinds[x.kind] || t.kinds.otro)}${x.place ? ' · ' + esc(x.place) : ''}`, esc(pick(x, 'title', l)),
+      esc(pick(x, 'summary', l) || when(x, l)), `<a class="tr-back" href="#trayectoria">${esc(t.back)}</a>`)
+      + `<section class="section"><div class="shell">${cover}<div class="tr-detail">`
+      + `<div class="tr-text" data-reveal="">${text ? `<p class="overline">${esc(t.what)}</p>${body(text)}` : ''}</div>${info}</div>`
+      + (video ? `<div class="tr-block" data-reveal=""><p class="overline">${esc(t.video)}</p><div class="tr-video"><iframe src="${esc(video)}" title="${esc(pick(x, 'title', l))}" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>` : '')
+      + (photos.length ? `<div class="tr-block" data-reveal=""><p class="overline">${esc(t.gallery)} · ${photos.length}</p><div class="tr-gallery">${photos.map((u, i) => `<button type="button" data-tr-photo="${i}" aria-label="${esc(t.gallery)} ${i + 1}"><img src="${esc(u)}" alt="" loading="lazy"/></button>`).join('')}</div></div>` : '')
+      + `<a class="tr-back dark" href="#trayectoria">${esc(t.back)}</a></div></section>`;
+  }
+
+  function template(id) {
+    let el = document.getElementById('vista-' + id);
+    if (!el) { el = document.createElement('template'); el.id = 'vista-' + id; el.dataset.tr = ''; document.body.appendChild(el); }
+    return el;
+  }
+
+  // ---------- Menú y rutas (conviven con las páginas que maneja el editor del sitio) ----------
+  const origVisible = window.aeroPageVisible;
+  window.aeroPageVisible = (id) => ours.includes(id) || (origVisible ? origVisible(id) : true);
+  const origRefresh = window.aeroRefreshNavigation;
+  window.aeroRefreshNavigation = (ids, labels) => { baseIds = ids; baseNames = labels || {}; sync(); };
+
+  function sync() {
+    let link = menu.querySelector('a[href="#trayectoria"]');
+    if (!ours.length) link?.remove();
+    else {
+      if (!link) { link = document.createElement('a'); link.href = '#trayectoria'; menu.appendChild(link); }
+      link.textContent = T[lang()].nav;
+      link.style.display = '';
+      const route = window.aeroCurrentRoute || '';
+      if (route.startsWith('trayectoria')) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+      // Orden: antes de Redes (o de Sumate), respetando el orden que arma el editor
+      const shown = [...menu.querySelectorAll('a')].filter((a) => a !== link && a.style.display !== 'none')
+        .sort((a, b) => (+a.style.order || 0) - (+b.style.order || 0));
+      const at = ['#redes', '#sumate'].map((h) => shown.findIndex((a) => a.getAttribute('href') === h)).find((i) => i >= 0);
+      shown.splice(at ?? shown.length, 0, link);
+      shown.forEach((a, i) => { a.style.order = String(i); });
+    }
+    const base = (baseIds || [...menu.querySelectorAll('a')].filter((a) => a.style.display !== 'none').map((a) => a.getAttribute('href').slice(1)))
+      .filter((id) => !id.startsWith('trayectoria'));
+    origRefresh?.(base.concat(ours), Object.assign({}, baseNames, names));
+  }
+
+  let lastKey = '';
+  function render(data, force) {
+    if (!Array.isArray(data)) return;
+    const l = lang();
+    const key = l + JSON.stringify(data);
+    if (key === lastKey && !force) return;
+    lastKey = key;
+    list = data.filter((x) => x && /^[a-z0-9-]+$/.test(x.slug || ''));
+    const before = ours;
+    ours = list.length ? ['trayectoria', ...list.map((x) => 'trayectoria-' + x.slug)] : [];
+    names = Object.fromEntries([['trayectoria', T[l].nav], ...list.map((x) => ['trayectoria-' + x.slug, pick(x, 'title', l)])]);
+    document.querySelectorAll('template[data-tr]').forEach((el) => { if (!ours.includes(el.id.slice(7))) el.remove(); });
+    if (list.length) {
+      template('trayectoria').innerHTML = listPage(l);
+      list.forEach((x) => { template('trayectoria-' + x.slug).innerHTML = detailPage(x, l); });
+    }
+    sync();
+    // Si se está viendo (o se pidió) una de estas páginas, mostrarla con lo nuevo
+    let wanted = '';
+    try { wanted = decodeURIComponent(location.hash.slice(1)).toLowerCase(); } catch (e) {}
+    const current = window.aeroCurrentRoute || '';
+    if ((ours.includes(wanted) && current !== wanted) || current.startsWith('trayectoria') || before.includes(wanted)) window.aeroRefreshCurrent?.();
+  }
+
+  // ---------- Fotos en grande ----------
+  let box = null, photos = [], idx = 0;
+  function openPhoto(i) {
+    if (!box) {
+      box = document.createElement('dialog');
+      box.className = 'tr-lightbox';
+      box.innerHTML = '<img alt=""/><button type="button" class="tr-lb-close"></button><button type="button" class="tr-lb-prev">‹</button><button type="button" class="tr-lb-next">›</button>';
+      document.body.appendChild(box);
+      box.addEventListener('click', (e) => {
+        if (e.target.closest('.tr-lb-prev')) return show(idx - 1);
+        if (e.target.closest('.tr-lb-next')) return show(idx + 1);
+        if (e.target === box || e.target.closest('.tr-lb-close')) box.close();
+      });
+      box.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(idx - 1); if (e.key === 'ArrowRight') show(idx + 1); });
+    }
+    const t = T[lang()];
+    box.querySelector('.tr-lb-close').textContent = '✕';
+    box.querySelector('.tr-lb-close').setAttribute('aria-label', t.close);
+    box.querySelector('.tr-lb-prev').setAttribute('aria-label', t.prev);
+    box.querySelector('.tr-lb-next').setAttribute('aria-label', t.next);
+    box.classList.toggle('single', photos.length < 2);
+    show(i);
+    if (!box.open) box.showModal();
+  }
+  function show(i) { idx = (i + photos.length) % photos.length; box.querySelector('img').src = photos[idx]; }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tr-photo]');
+    if (!b) return;
+    photos = [...b.closest('.tr-gallery').querySelectorAll('img')].map((img) => img.src);
+    openPhoto(+b.dataset.trPhoto);
+  });
+
+  // El menú marca "Trayectoria" también dentro de cada entrada
+  const main = document.getElementById('contenido');
+  if (main) new MutationObserver(() => {
+    const link = menu.querySelector('a[href="#trayectoria"]');
+    if (!link) return;
+    if ((window.aeroCurrentRoute || '').startsWith('trayectoria')) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }).observe(main, { childList: true });
+
+  // ---------- Datos ----------
+  try { render(JSON.parse(localStorage.getItem(CACHE) || 'null')); } catch (e) {}
+  if (!baseIds) sync();
+  const cols = 'slug,kind,title,title_en,place,starts_on,ends_on,achievement,achievement_en,summary,summary_en,body,body_en,cover_url,photos,video_url,link_url';
+  function pull() {
+    fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/site_trayectoria?select=' + cols + '&visible=eq.true&order=starts_on.desc',
+      { headers: { apikey: cfg.anonKey, Accept: 'application/json' }, cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+      .then((data) => { render(data); try { localStorage.setItem(CACHE, JSON.stringify(data)); } catch (e) {} })
+      .catch((err) => console.warn('AeroGlobETec: no se pudo cargar la trayectoria.', err.message));
+  }
+  pull();
+  setInterval(() => { if (!document.hidden) pull(); }, 120000);
+
+  // Idioma: rearmar las páginas en el idioma elegido
+  document.querySelectorAll('.aero-lang button').forEach((b) => b.addEventListener('click', () => setTimeout(() => render(list, true), 0)));
 })();
 </script>
 </body></html>

@@ -187,6 +187,7 @@ export function formData(form) {
   for (const el of form.elements) {
     if (!el.name) continue;
     if (el.type === 'file') data[el.name] = [...el.files];
+    else if (el.type === 'radio') { if (el.checked) data[el.name] = el.value; }
     else if (el.type === 'checkbox') {
       if (el.dataset.multi !== undefined) { (data[el.name] ||= []); if (el.checked) data[el.name].push(el.value); }
       else data[el.name] = el.checked;

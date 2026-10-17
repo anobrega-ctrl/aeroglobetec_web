@@ -165,6 +165,11 @@ function demoEvents(P, { doc, lider, tomas, sofia, valen }) {
       { id: uid(), full_name: 'Patricia Furci', role_es: 'Docente del taller', role_en: 'Workshop teacher', email: 'patricia.furci@etec.um.edu.ar', phone: '', photo_url: '', position: 2, visible: true },
       { id: uid(), full_name: 'Mario Papetti Funes', role_es: 'Docente del taller', role_en: 'Workshop teacher', email: 'mario.papetti@etec.um.edu.ar', phone: '+54 9 261 566-4422', photo_url: '', position: 3, visible: true },
     ],
+    trayectoria: [
+      { id: uid(), slug: 'feria-ciencias-2026', kind: 'feria', title: 'Feria de Ciencias 2026', title_en: 'Science Fair 2026', place: 'Mendoza', starts_on: '2026-09-12', ends_on: null,
+        achievement: '1.er puesto en Tecnología', achievement_en: '1st place in Technology', summary: 'Mostramos el globo sonda y explicamos cómo medimos la atmósfera.', summary_en: '', body: 'Llevamos el globo sonda con su carga útil.\n\n- Armamos un stand con la telemetría en vivo.\n- Explicamos el proyecto a más de 200 visitantes.\n\nEl jurado destacó el trabajo en equipo.', body_en: '',
+        cover_url: '', photos: [], video_url: '', link_url: '', event_id: null, visible: true },
+    ],
     events: [
       { id: E1, kind: 'competencia', title: 'CATE 2027', description: 'Competencia Argentina de Tecnología Espacial. Presentamos el Dron Rover.', starts_on: '2027-04-15', ends_on: '2027-04-17', location: 'Córdoba', organizer: 'CATE', website: 'https://example.org/cate', status: 'preparacion', color: '#3774bc', created_by: lider, created_at: ago(100) },
       { id: E2, kind: 'charla', title: 'Charla en la Expo ETec', description: 'Contamos qué hace el taller y mostramos el prototipo.', starts_on: day(12), ends_on: null, location: 'SUM de la ETec', organizer: 'ETec UM', website: '', status: 'confirmado', color: '#ffb454', created_by: doc, created_at: ago(50) },
@@ -222,7 +227,11 @@ function demoExtras(P, { mec, ele }, { doc, lider, tomas, sofia, mateo }) {
 
 let db = load();
 function load() {
-  if (TOUR) return seed();
+  if (TOUR) {   // el recorrido muestra todo, así que entra como admin
+    const s = seed();
+    s.me = s.profiles.find(p => p.is_admin)?.id || s.me;
+    return s;
+  }
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s?.profiles) return s; } catch { /* sin datos guardados */ }
   return seed();
 }
@@ -627,6 +636,20 @@ export const api = {
   },
   async deleteTeacher(id) { if (!(meP().is_admin || meP().role === 'docente')) deny(); db.teachers = db.teachers.filter(t => t.id !== id); save(); },
   async uploadTeacherPhoto() { throw new Error('En modo demo pegá un link https de la foto.'); },
+  async uploadSitePhoto() { throw new Error('En modo demo no se pueden subir fotos: pegá links https.'); },
+
+  // ---------- Trayectoria de la web pública ----------
+  async trayectoria() { return clone(db.trayectoria || []).sort((a, b) => b.starts_on.localeCompare(a.starts_on)); },
+  async saveTrayectoria(t) {
+    if (!(meP().is_admin || meP().role === 'docente')) deny();
+    db.trayectoria ||= [];
+    if (db.trayectoria.some(x => x.slug === t.slug && x.id !== t.id)) throw new Error('Ya hay otra entrada con esa dirección.');
+    const row = db.trayectoria.find(x => x.id === t.id);
+    if (row) Object.assign(row, t);
+    else db.trayectoria.push({ id: uid(), kind: 'competencia', title_en: '', place: '', ends_on: null, achievement: '', achievement_en: '', summary: '', summary_en: '', body: '', body_en: '', cover_url: '', photos: [], video_url: '', link_url: '', event_id: null, visible: true, ...t });
+    save();
+  },
+  async deleteTrayectoria(id) { if (!(meP().is_admin || meP().role === 'docente')) deny(); db.trayectoria = (db.trayectoria || []).filter(t => t.id !== id); save(); },
 
   // ---------- Charlas y competencias ----------
   async events() {

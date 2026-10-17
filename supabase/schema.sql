@@ -1469,3 +1469,46 @@ create policy eventos_insert on storage.objects for insert to authenticated
   with check (bucket_id = 'proyectos' and public.can_view_event(public.storage_event(name)));
 create policy eventos_delete on storage.objects for delete to authenticated
   using (bucket_id = 'proyectos' and public.storage_event(name) is not null and (owner = auth.uid() or public.is_staff()));
+
+-- =====================================================================
+-- Trayectoria de la web pública: dónde estuvimos, qué hicimos y qué ganamos.
+-- Cada entrada tiene su propia página en la web. La web la lee sin login;
+-- la editan docentes y admins desde la plataforma (Sitio web → Trayectoria).
+-- Las fotos van al bucket público aero-media, carpeta trayectoria/.
+-- =====================================================================
+create table if not exists public.site_trayectoria (
+  id             uuid primary key default gen_random_uuid(),
+  slug           text not null unique check (slug ~ '^[a-z0-9][a-z0-9-]{1,60}$'),
+  kind           text not null default 'competencia' check (kind in ('competencia', 'charla', 'feria', 'visita', 'otro')),
+  title          text not null check (length(trim(title)) between 1 and 120),
+  title_en       text not null default '' check (length(title_en) <= 120),
+  place          text not null default '' check (length(place) <= 120),
+  starts_on      date not null,
+  ends_on        date check (ends_on is null or ends_on >= starts_on),
+  achievement    text not null default '' check (length(achievement) <= 160),
+  achievement_en text not null default '' check (length(achievement_en) <= 160),
+  summary        text not null default '' check (length(summary) <= 400),
+  summary_en     text not null default '' check (length(summary_en) <= 400),
+  body           text not null default '' check (length(body) <= 8000),
+  body_en        text not null default '' check (length(body_en) <= 8000),
+  cover_url      text not null default '' check (cover_url = '' or cover_url ~ '^https://'),
+  photos         text[] not null default '{}' check (cardinality(photos) <= 30),
+  video_url      text not null default '' check (video_url = '' or video_url ~ '^https://'),
+  link_url       text not null default '' check (link_url = '' or link_url ~ '^https://'),
+  event_id       uuid references public.events(id) on delete set null,
+  visible        boolean not null default true,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+
+alter table public.site_trayectoria enable row level security;
+drop policy if exists site_trayectoria_read on public.site_trayectoria;
+drop policy if exists site_trayectoria_write on public.site_trayectoria;
+create policy site_trayectoria_read on public.site_trayectoria for select to anon, authenticated
+  using (visible or public.can_edit_site());
+create policy site_trayectoria_write on public.site_trayectoria for all to authenticated
+  using (public.can_edit_site()) with check (public.can_edit_site());
+
+drop trigger if exists site_trayectoria_touch on public.site_trayectoria;
+create trigger site_trayectoria_touch before update on public.site_trayectoria
+  for each row execute function public.touch_updated_at();
