@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="#050b1b" name="theme-color"/><meta content="Conocé AeroGlobETec, el taller estudiantil de la ETec de la Universidad de Mendoza: integrantes, instalaciones, organización, docentes, redes e inscripción." name="description"/><title>AeroGlobETec · Taller de la ETec UM | Sitio oficial</title><meta content="dark light" name="color-scheme"/><meta property="og:type" content="website"/><meta property="og:site_name" content="AeroGlobETec"/><meta property="og:locale" content="es_AR"/><meta property="og:title" content="AeroGlobETec · Taller de la ETec UM"/><meta property="og:description" content="Taller estudiantil de la ETec de la Universidad de Mendoza: investigación, proyectos y trabajo en equipo."/><meta property="og:url" content="https://aeroglobe.wetec.um.edu.ar/"/><meta property="og:image" content="https://aeroglobe.wetec.um.edu.ar/assets/compartir.png"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content="Emblema de AeroGlobETec: astronauta con una órbita y un satélite"/><meta name="twitter:card" content="summary_large_image"/><link href="assets/favicon-48.png" rel="icon" sizes="48x48" type="image/png"/><link href="assets/apple-touch-icon.png" rel="apple-touch-icon"/><style>/* AeroGlobETec — web multipágina. Colores extraídos de los logos facilitados. */
+:root{--bg:#050b1b;--bg2:#0a1630;--bg3:#112345;--blue:#7caef3;--blue2:#3774bc;--ice:#bed9ff;--white:#fff;--paper:#f5f7fc;--pale:#edf2fa;--ink:#08162e;--muted:#5c6d85;--soft:#a5b6cf;--line:rgba(156,194,248,.17);--stroke:#dae4f2;--font:'DM Sans',system-ui,-apple-system,Segoe UI,sans-serif;--display:'Space Grotesk',var(--font);--header:82px;--ease:cubic-bezier(.22,1,.36,1)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:95px}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow-x:hidden}body.is-leaving{opacity:0;transform:translateY(8px);transition:opacity .22s ease,transform .22s ease}::selection{background:#aacbff;color:#061228}img,svg{display:block;max-width:100%}a{text-decoration:none;color:inherit}button{font:inherit;cursor:pointer}a:focus-visible,button:focus-visible{outline:3px solid #9ed2ff;outline-offset:4px}p{line-height:1.82}h1,h2,h3{font-family:var(--display);letter-spacing:-.055em}h1,h2,h3,p{overflow-wrap:break-word}.shell{width:min(1180px,calc(100% - 64px));margin-inline:auto}.skip{position:absolute;top:-100px;left:14px;padding:12px 18px;background:#fff;color:var(--ink);z-index:500;border-radius:6px}.skip:focus{top:12px}
+/* Navegación con página activa */
+.site-header{position:sticky;top:0;z-index:80;background:rgba(4,11,27,.94);border-bottom:1px solid rgba(176,209,252,.12);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);transition:background .3s}.site-header.scrolled{background:rgba(4,10,25,.97)}.site-header:after{content:'';position:absolute;bottom:-1px;left:0;height:2px;width:var(--scroll-progress,0%);background:linear-gradient(90deg,#2e6cbb,#b3d8ff);box-shadow:0 0 15px #82b5f1;pointer-events:none}.header-inner{min-height:var(--header);display:flex;justify-content:space-between;align-items:center;gap:26px}.brand{display:inline-flex;align-items:center;gap:11px;color:#fff;min-width:0}.brand-mark{width:45px;height:45px;border-radius:10px;border:1px solid rgba(167,213,255,.21);overflow:hidden;display:grid;place-items:center;background:#020510;flex:none}.brand-mark img{width:49px;max-width:none;height:49px;object-fit:cover;border-radius:0}.brand-name{display:block;font:700 23px/1 var(--display);letter-spacing:-.075em;white-space:nowrap}.brand-name b{color:#75aafa;font-weight:700}.brand-caption{display:block;font-size:9px;font-weight:800;letter-spacing:.19em;color:#8ca4c5;text-transform:uppercase;margin-top:6px;white-space:nowrap}.nav{display:flex;align-items:center;gap:clamp(10px,1.8vw,25px)}.nav a{position:relative;color:#bccde5;font-weight:700;font-size:12px;letter-spacing:.01em;white-space:nowrap;transition:color .2s}.nav a:not(.nav-cta):after{content:'';position:absolute;bottom:-12px;left:0;height:2px;width:0;background:#8fbdf7;transition:width .23s}.nav a:hover,.nav a[aria-current=page]{color:#fff}.nav a:hover:after,.nav a[aria-current=page]:after{width:100%}.nav .nav-cta{color:#08162e;background:#adcdff;border:1px solid #adcdff;padding:12px 15px;border-radius:9px;transition:transform .2s,background .2s}.nav .nav-cta:hover{background:#d8e9ff;transform:translateY(-2px)}.nav .nav-cta[aria-current=page]{background:#fff}.menu-button{display:none;align-items:center;justify-content:center;width:43px;height:43px;border:1px solid rgba(174,202,247,.3);color:#fff;background:rgba(155,203,251,.08);border-radius:10px}.menu-button svg{width:21px;height:21px}
+/* Estrellas y movimiento orbital */
+.space-bg{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse 60% 85% at 78% 56%,rgba(25,72,135,.31),transparent 75%),radial-gradient(ellipse 58% 70% at 4% 110%,rgba(27,57,113,.20),transparent 65%),#050b1b;color:#fff}.space-bg:before{content:'';position:absolute;inset:0;z-index:-1;background-image:linear-gradient(90deg,rgba(158,206,255,.043) 1px,transparent 1px),linear-gradient(rgba(158,206,255,.037) 1px,transparent 1px);background-size:80px 80px;mask-image:linear-gradient(90deg,transparent,black 18%,black 86%,transparent);pointer-events:none}.starfield{position:absolute;inset:0;z-index:-1;pointer-events:none}.starfield i{display:block;position:absolute;border-radius:50%;background:#bcdcff;box-shadow:0 0 11px #6db2ff;opacity:.6}.orbital-stage{position:relative;min-height:490px;display:grid;place-items:center;isolation:isolate;transform:translate3d(calc(var(--mx,0px)*.14),calc(var(--my,0px)*.14 + var(--parallax,0px)*-.1),0);will-change:transform}.ring{pointer-events:none;position:absolute;width:min(515px,98%);aspect-ratio:1;border:1px solid rgba(117,180,246,.20);border-radius:50%;transform:rotate(-18deg) scaleY(.89)}.ring.r2{width:min(432px,85%);border-color:rgba(132,204,255,.35);border-top:1.5px solid #93c9ff;border-bottom-color:rgba(164,202,242,.1);animation:orbit-rotate 38s linear infinite}.ring.r3{width:min(350px,73%);border-style:dashed;opacity:.35;animation:orbit-spin 60s linear infinite}.ring.r4{width:min(570px,108%);border-color:rgba(117,180,246,.09);transform:rotate(-23deg) scaleY(.73)}.orb-dot{position:absolute;width:11px;height:11px;top:16%;right:14%;border-radius:50%;background:#94c8ff;box-shadow:0 0 0 8px rgba(142,200,248,.06),0 0 20px #8fc8ff;animation:bob 7s ease-in-out infinite}.orb-dot.second{width:7px;height:7px;top:auto;bottom:20%;left:11%;right:auto;animation-delay:1.3s}.logo-orbit{position:relative;width:min(365px,74%);aspect-ratio:1;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:radial-gradient(circle at 50% 50%,#172a4b,#050b1b 80%);box-shadow:0 0 80px rgba(50,125,219,.15),inset 0 0 55px rgba(84,166,250,.09);border:1px solid rgba(141,200,255,.22)}.logo-orbit img{width:88%;height:auto;max-width:none;object-fit:contain;mask-image:radial-gradient(circle,black 68%,transparent 85%);filter:brightness(1.1)}.stage-label{position:absolute;bottom:-8px;right:7%;color:#84a8d4;letter-spacing:.23em;font-size:9px;text-transform:uppercase;white-space:nowrap}.visual-glow{position:absolute;width:360px;height:360px;pointer-events:none;z-index:-1;filter:blur(75px);background:rgba(43,108,195,.14);border-radius:50%}.float-chip{position:absolute;border:1px solid rgba(138,200,255,.31);border-radius:10px;padding:10px 13px;backdrop-filter:blur(12px);background:rgba(11,33,66,.65);color:#bfd8fd;font:700 10px var(--display);letter-spacing:.11em;animation:bob 6s ease-in-out infinite}.float-chip.fc1{left:-1%;top:23%}.float-chip.fc2{right:-3%;bottom:19%;animation-delay:-3s}@keyframes orbit-rotate{to{transform:rotate(342deg) scaleY(.89)}}@keyframes orbit-spin{to{transform:rotate(360deg)}}@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -12px}}
+/* Portadas */
+.home-hero{padding:75px 0 96px;min-height:690px;display:flex;align-items:center}.home-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:35px;align-items:center}.eyebrow{display:flex;gap:14px;align-items:center;margin:0 0 25px;font-size:10px;letter-spacing:.24em;font-weight:800;text-transform:uppercase;color:var(--blue)}.eyebrow:before{content:'';width:28px;height:1px;flex:none;background:currentColor}.home-hero h1{font-size:clamp(60px,7.1vw,98px);line-height:.99;margin:0 0 25px;max-width:780px;letter-spacing:-.081em}.home-hero h1 em,.inner-hero h1 em{color:#91bffa;font-style:normal}.hero-description{color:#b5c7e1;max-width:515px;font-size:16px;line-height:1.9;margin:0 0 31px}.actions{display:flex;flex-wrap:wrap;gap:12px}.btn{display:inline-flex;gap:13px;align-items:center;justify-content:center;min-height:49px;padding:14px 21px;font-size:13px;font-weight:800;border:1px solid transparent;border-radius:10px;transition:background .22s,transform .22s,border-color .22s;letter-spacing:.005em}.btn svg{height:17px;width:17px;flex:none}.btn:hover{transform:translateY(-3px)}.btn-primary{background:#afcfff;color:#091a32}.btn-primary:hover{background:#e3f0ff}.btn-glass{color:#e5efff;border-color:rgba(182,213,255,.33);background:rgba(141,186,247,.045)}.btn-glass:hover{background:rgba(141,186,247,.15)}.btn-dark{background:#0b1e40;color:#fff}.btn-dark:hover{background:#1f4c80}.tiny-facts{display:flex;gap:0;margin-top:62px;flex-wrap:wrap}.tiny-fact{padding:0 23px;border-left:1px solid rgba(135,177,239,.38)}.tiny-fact:first-child{padding-left:14px}.tiny-fact strong{display:block;font:700 20px var(--display);letter-spacing:-.06em;color:#fff}.tiny-fact span{display:block;color:#9cb0d1;font-size:11px;margin-top:6px}.inner-hero{padding:88px 0 95px;min-height:390px}.inner-hero .shell{position:relative}.inner-hero h1{font-size:clamp(53px,6.4vw,88px);max-width:890px;margin:0 0 21px;line-height:1.04}.inner-hero .subhead{color:#b9cbe2;max-width:690px;margin:0;font-size:16px;line-height:1.9}.orbital-watermark{position:absolute;right:3%;top:-43px;width:min(280px,28vw);aspect-ratio:1;border:1px solid rgba(112,183,248,.22);border-radius:50%;pointer-events:none;transform:rotate(22deg) scaleY(.85)}.orbital-watermark:before,.orbital-watermark:after{content:'';position:absolute;inset:12%;border:1px dashed rgba(146,197,247,.15);border-radius:50%}.orbital-watermark:after{inset:-20%;border-style:solid;opacity:.5}.breadcrumbs{color:#87a8ce;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0 0 25px}.breadcrumbs a{color:#b3cef5}.breadcrumbs span{margin-inline:10px;color:#46698c}.page-number{position:absolute;right:0;bottom:0;font-family:var(--display);font-size:110px;line-height:.8;letter-spacing:-.1em;color:rgba(191,214,251,.065);font-weight:700;user-select:none}
+/* Bloques y tarjetas */
+main{min-height:60vh}.section{padding:96px 0}.section.compact{padding:72px 0}.section.pale{background:var(--pale)}.section.navy{background:#08172f;color:#fff}.section-top{display:flex;align-items:end;justify-content:space-between;gap:35px;margin-bottom:35px}.section-top h2,.big-heading{font-size:clamp(38px,4.5vw,61px);line-height:1.12;margin:0;letter-spacing:-.071em}.section-top h2 em,.big-heading em{font-style:normal;color:#3d78c0}.section-top p{max-width:400px;color:var(--muted);font-size:15px;margin:0}.overline{font-size:10px;font-weight:800;letter-spacing:.23em;text-transform:uppercase;color:#4176ad;margin:0 0 22px}.lead{font-size:18px;color:#51647e;line-height:1.9}.text-col p{color:#596c83;font-size:15px}.text-col strong{color:#162e53}.split{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.stack>*+*{margin-top:24px}.link-inline{display:inline-flex;align-items:center;gap:10px;font-weight:800;color:#2e6ead;font-size:13px;transition:gap .2s}.link-inline:hover{gap:16px}.link-inline svg{width:17px;height:17px}.cards-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.explore-card{position:relative;display:flex;flex-direction:column;min-height:244px;padding:28px 27px;border-radius:18px;border:1px solid var(--stroke);background:#fff;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s,border-color .3s;box-shadow:0 3px 12px rgba(31,61,106,.025)}.explore-card:before{content:'';position:absolute;inset:auto -60px -145px auto;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(137,189,249,.20),transparent 67%);pointer-events:none}.explore-card:hover{transform:translateY(-8px);border-color:#9fc4f6;box-shadow:0 25px 45px rgba(23,63,117,.095)}.card-number{font:700 10px var(--display);color:#5788c5;letter-spacing:.2em}.card-symbol{height:48px;width:48px;border:1px solid #d2e1f5;border-radius:13px;background:#edf5ff;display:grid;place-items:center;color:#2e6aa9;margin-bottom:24px}.card-symbol svg{width:23px;height:23px}.explore-card h3{font-size:23px;letter-spacing:-.055em;margin:0 0 10px}.explore-card p{font-size:13px;color:#697a91;margin:0 0 23px;line-height:1.7}.card-arrow{margin-top:auto;align-self:flex-end;font-weight:700;color:#3373b8;font-size:23px;line-height:1}.small-card{border:1px solid var(--stroke);border-radius:18px;padding:27px;background:#fff}.small-card h3{font-size:21px;margin:14px 0 8px}.small-card p{margin:0;font-size:14px;color:var(--muted)}.small-card .number{font:700 12px var(--display);color:#4e8bd1}.logo-panel{background:#eef3f9;border-radius:22px;position:relative;overflow:hidden;border:1px solid #d9e5f2;box-shadow:0 17px 55px rgba(27,61,103,.08);min-height:440px;display:grid;place-items:center;padding:15px}.logo-panel:before{content:'';position:absolute;inset:0;background-image:linear-gradient(#c7d6e8 1px,transparent 1px),linear-gradient(90deg,#c7d6e8 1px,transparent 1px);background-size:37px 37px;opacity:.23;pointer-events:none}.logo-panel img{position:relative;max-height:445px;width:100%;height:auto;object-fit:contain;mix-blend-mode:multiply}.panel-corner{position:absolute;top:17px;left:18px;font-size:10px;letter-spacing:.2em;font-weight:800;color:#4b75a3;z-index:1}.panel-footer{position:absolute;bottom:16px;right:17px;z-index:1;background:#fff;padding:8px 12px;border-radius:7px;color:#37659a;font-size:9px;font-weight:800;letter-spacing:.1em}
+/* Planos estilizados, NO fotografías */
+.blueprint{border-radius:21px;min-height:395px;background:radial-gradient(circle at 50% 40%,rgba(65,132,212,.2),transparent 60%),#0a1a35;border:1px solid rgba(91,143,213,.22);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:25px;color:#8cc0f8}.blueprint:before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(113,178,243,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(113,178,243,.08) 1px,transparent 1px);background-size:28px 28px}.blueprint svg{width:100%;max-width:470px;z-index:1;filter:drop-shadow(0 0 20px rgba(100,170,255,.13));transform:translateY(calc(var(--parallax,0px)*-.04))}.blueprint .bp-title{position:absolute;top:21px;left:23px;color:#aecdf4;font:700 10px var(--display);letter-spacing:.16em}.blueprint .bp-caption{position:absolute;bottom:20px;right:23px;font:700 10px var(--display);letter-spacing:.16em;color:#8ebbf0}.fact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:33px}.fact-box{border-top:1px solid #c8d7e7;padding:17px 0}.fact-box b{font:700 16px var(--display);display:block}.fact-box small{font-size:12px;color:#6c7c93;display:block;margin-top:8px}
+/* Metodología */
+.process-list{position:relative;max-width:990px;margin-inline:auto;display:grid;gap:0}.process-list:before{content:'';position:absolute;top:20px;bottom:36px;left:29px;width:1px;background:#cdddf0}.process-item{position:relative;display:grid;grid-template-columns:60px 1fr;gap:24px;padding:22px 0}.process-bubble{position:relative;z-index:2;display:grid;place-items:center;height:60px;width:60px;background:#0c2144;border:5px solid #edf2fa;border-radius:50%;font:700 15px var(--display);color:#b3d8ff;box-shadow:0 0 0 1px #c5d9ef}.process-content{background:#fff;border:1px solid #d8e4f3;border-radius:17px;padding:26px 30px;transition:transform .2s,border-color .2s}.process-content:hover{transform:translateX(6px);border-color:#93bff2}.process-content h3{font-size:25px;margin:0 0 8px}.process-content p{color:#65768a;margin:0;font-size:14px}.process-content .mini{display:block;color:#4d89c8;text-transform:uppercase;letter-spacing:.16em;font-size:10px;font-weight:800;margin-bottom:8px}
+/* Docentes */
+.teachers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.teacher-card{background:#fff;border:1px solid #dae5f4;border-radius:18px;padding:31px;display:flex;flex-direction:column;min-height:314px;transition:transform .3s var(--ease),box-shadow .3s}.teacher-card:hover{transform:translateY(-6px);box-shadow:0 25px 45px rgba(30,58,104,.10)}.teacher-avatar{display:grid;place-items:center;width:70px;height:70px;border-radius:18px;background:linear-gradient(140deg,#112a52,#376cac);color:#ecf5ff;font:700 23px var(--display);margin-bottom:27px}.teacher-card .role{font-size:10px;letter-spacing:.20em;font-weight:800;text-transform:uppercase;color:#477db8}.teacher-card h3{font-size:27px;line-height:1.15;margin:10px 0 23px}.teacher-card a{display:inline-flex;gap:9px;align-items:flex-start;color:#3c6ea2;overflow-wrap:anywhere;font-size:12px;font-weight:700;margin-top:12px}.teacher-card a:hover{text-decoration:underline}.teacher-card svg{width:15px;height:15px;flex:none;margin-top:1px}
+/* Redes */
+.social-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.social-card{display:flex;gap:21px;align-items:center;background:#fff;border:1px solid #dce6f4;border-radius:16px;padding:26px;transition:transform .25s,box-shadow .25s}.social-card:hover{transform:translateY(-5px);box-shadow:0 18px 35px rgba(20,61,116,.08)}.social-icon{flex:none;width:53px;height:53px;display:grid;place-items:center;background:#e8f2ff;border-radius:13px;color:#326cab;font:700 20px var(--display)}.social-card h3{font-size:19px;margin:0 0 4px}.social-card p{font-size:12px;color:#70839b;margin:0;word-break:break-word}.social-card .right-arrow{margin-left:auto;color:#3673ba;font-size:22px;flex:none}
+/* Inscripción */
+.join-panel{display:grid;grid-template-columns:1.08fr .92fr;gap:30px;align-items:center;background:#0b1e3c;color:#fff;padding:54px;border-radius:23px;position:relative;overflow:hidden}.join-panel:after{content:'';position:absolute;width:460px;height:460px;right:-130px;top:-120px;border:1px solid rgba(159,201,255,.2);border-radius:50%;box-shadow:0 0 0 70px rgba(115,177,255,.035),0 0 0 145px rgba(115,177,255,.022);pointer-events:none}.join-panel h2{font-size:clamp(39px,5vw,61px);margin:0 0 20px;line-height:1.1}.join-panel p{color:#b8c9e0;font-size:15px;margin:0}.join-action{z-index:1;position:relative;justify-self:center;background:rgba(17,43,84,.82);border:1px solid rgba(172,208,255,.23);border-radius:18px;padding:35px;max-width:350px;width:100%;text-align:center}.join-action .symbol{font-size:48px;display:block;margin-bottom:14px;color:#afccf5}.join-action p{font-size:12px;margin-bottom:20px}.join-action .btn{width:100%}.cta-strip{background:var(--bg);color:#fff;padding:65px 0;position:relative;overflow:hidden}.cta-strip:after{content:'';position:absolute;right:-100px;top:-90px;width:300px;height:300px;border:1px solid rgba(152,201,252,.18);border-radius:50%;box-shadow:0 0 0 80px rgba(93,157,244,.04)}.cta-inner{display:flex;justify-content:space-between;gap:24px;align-items:center;position:relative;z-index:1}.cta-inner h2{font-size:clamp(29px,3vw,45px);margin:0 0 7px}.cta-inner p{color:#aabbD2;margin:0;font-size:14px}.cta-inner .btn{flex:none}
+/* Footer */
+.site-footer{padding:54px 0 27px;background:#030916;color:#9eb0c8}.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:45px}.footer-brand{max-width:365px}.footer-brand p{font-size:13px;color:#8fa4c1;margin:21px 0 0}.footer-heading{font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:#9ec5f7;font-size:10px;margin:0 0 21px}.footer-links{display:grid;gap:12px}.footer-links a{font-size:12px;transition:color .2s;color:#b3c2d8}.footer-links a:hover{color:#fff}.footer-bottom{display:flex;justify-content:space-between;align-items:center;gap:15px;border-top:1px solid rgba(168,198,232,.13);padding-top:22px;margin-top:52px;font-size:11px;color:#7186a6}.footer-bottom a:hover{color:#fff}
+/* Reveal, vista con JavaScript */
+.js [data-reveal]{opacity:0;transform:translateY(36px) scale(.992);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--delay,0ms)}.js [data-reveal].in-view{opacity:1;transform:translateY(0) scale(1)}.js .home-hero .hero-copy{animation:rise-in .9s var(--ease) both}.js .home-hero .orbital-stage{animation:rise-in 1.1s var(--ease) .15s both}@keyframes rise-in{from{opacity:0;translate:0 24px}to{opacity:1;translate:0 0}}
+@media(max-width:1130px){.brand-name{font-size:20px}.brand-caption{font-size:8px}.nav{gap:13px}.nav a{font-size:11px}.nav .nav-cta{padding:11px 12px}.header-inner{gap:11px}.split{gap:42px}}
+@media(max-width:920px){:root{--header:76px}.menu-button{display:inline-flex}.js .nav{position:absolute;top:100%;left:0;right:0;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:9px 24px 22px;background:rgba(5,13,31,.98);border-bottom:1px solid rgba(153,192,245,.2);box-shadow:0 24px 45px rgba(3,7,22,.34);visibility:hidden;opacity:0;transform:translateY(-12px);pointer-events:none;transition:transform .28s,opacity .28s,visibility .28s}.js .nav.open{visibility:visible;opacity:1;transform:translateY(0);pointer-events:auto}.nav a{padding:15px 14px;font-size:14px}.nav a:not(.nav-cta):after{bottom:6px;left:14px}.nav .nav-cta{margin-top:11px;text-align:center}.home-grid{grid-template-columns:1fr .8fr;gap:0}.home-hero h1{font-size:clamp(56px,7.6vw,84px)}.float-chip{display:none}.cards-grid,.teachers{grid-template-columns:repeat(2,1fr)}.social-cards{grid-template-columns:1fr 1fr}.footer-grid{gap:25px}}
+@media(max-width:700px){.shell{width:min(100% - 36px,1180px)}.brand-name{font-size:19px}.brand-caption{font-size:7.3px}.home-hero{padding:60px 0 65px}.home-grid{grid-template-columns:1fr}.home-hero h1{font-size:clamp(54px,12vw,79px)}.hero-description{font-size:15px}.tiny-facts{margin-top:36px}.tiny-fact{padding:0 15px}.tiny-fact:first-child{padding-left:12px}.tiny-fact strong{font-size:18px}.orbital-stage{margin-top:40px;min-height:340px;max-width:470px;width:100%;justify-self:center}.logo-orbit{width:min(270px,70%)}.stage-label{bottom:-2px}.inner-hero{padding:58px 0 70px;min-height:auto}.inner-hero h1{font-size:clamp(48px,11vw,67px)}.inner-hero .subhead{font-size:15px}.orbital-watermark{opacity:.25;right:-9%;top:30px}.page-number{font-size:80px}.section{padding:65px 0}.section.compact{padding:58px 0}.section-top{display:block}.section-top h2,.big-heading{font-size:clamp(37px,9vw,54px)}.section-top p{margin-top:15px}.split{grid-template-columns:1fr;gap:32px}.cards-grid,.teachers,.social-cards{grid-template-columns:1fr}.explore-card{min-height:210px}.logo-panel{min-height:350px}.logo-panel img{max-height:390px}.blueprint{min-height:300px}.fact-row{grid-template-columns:1fr 1fr;gap:12px}.join-panel{grid-template-columns:1fr;padding:30px 24px}.join-action{justify-self:stretch;max-width:none}.cta-inner{display:block}.cta-inner .btn{margin-top:23px}.footer-grid{grid-template-columns:1fr 1fr;gap:28px}.footer-brand{grid-column:1/-1}.footer-bottom{display:block;line-height:1.8}.section .lead{font-size:16px}}
+@media(max-width:420px){.brand-mark{width:39px;height:39px}.brand-mark img{width:43px;height:43px}.brand-name{font-size:18px}.brand-caption{font-size:7px}.home-hero h1{font-size:52px}.tiny-fact{padding:0 11px}.tiny-fact:first-child{padding-left:10px}.tiny-fact strong{font-size:15px}.tiny-fact span{font-size:10px}.process-list:before{left:24px}.process-item{grid-template-columns:50px 1fr;gap:13px}.process-bubble{width:50px;height:50px;font-size:12px}.process-content{padding:20px 18px}.process-content h3{font-size:20px}.social-card{padding:20px 16px;gap:13px}.social-icon{width:46px;height:46px}.social-card h3{font-size:17px}.social-card p{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.js [data-reveal]{opacity:1;transform:none}.orbital-stage,.blueprint svg{transform:none!important}}
+
+
+/* Versión autónoma: todos los recursos se encuentran en este mismo HTML. */
+:root { --font: 'Segoe UI',Inter,Arial,sans-serif; --display:'Segoe UI',Inter,Arial,sans-serif; }
+html { scroll-padding-top: calc(var(--header) + 18px); }
+section[id]{scroll-margin-top:calc(var(--header) + 16px)}
+.nav a[aria-current="location"]{color:#fff}
+.nav a[aria-current="location"]:not(.nav-cta):after {transform:scaleX(1)}
+.explore-card{cursor:pointer}
+.chapter-head{padding:58px 0;min-height:240px;display:flex;align-items:center}
+.chapter-wrap{position:relative;z-index:1;display:grid;grid-template-columns:1.2fr .8fr;gap:35px;align-items:center}
+.chapter-head .chapter-mark{color:#83b7fa;letter-spacing:.22em;font-size:10px;text-transform:uppercase;font-weight:800;margin:0 0 22px}
+.chapter-head h2{font-size:clamp(40px,5vw,73px);letter-spacing:-.07em;line-height:1.03;margin:0}
+.chapter-head h2 em{color:#93bff9;font-style:normal}
+.chapter-head .chapter-description{color:#b1c6e0;max-width:475px;line-height:1.82;font-size:15px;margin:0;position:relative;z-index:1}
+.chapter-head .chapter-index{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:700 clamp(120px,18vw,260px)/1 var(--display);letter-spacing:-.1em;color:rgba(152,198,255,.045);user-select:none;pointer-events:none}
+.chapter-head:after{content:'';position:absolute;right:-100px;bottom:-265px;width:510px;height:510px;border:1px solid rgba(162,207,254,.15);border-radius:50%;box-shadow:0 0 0 85px rgba(81,149,236,.022),0 0 0 170px rgba(81,149,236,.012);pointer-events:none}
+.chapter-head .shell{position:relative}
+.home-hero{scroll-margin-top:0}
+/* Allow cards to animate into view without risking invisible content when JS is slow. */
+.js [data-reveal]{transition-duration:.65s}
+.back-to-top{position:fixed;right:22px;bottom:20px;width:44px;height:44px;z-index:70;display:grid;place-items:center;border-radius:14px;background:#0d2346;border:1px solid rgba(160,204,255,.35);box-shadow:0 9px 24px rgba(0,0,0,.2);color:#fff;font-size:21px;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .3s,transform .3s}
+.back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+.chapter-deco{display:inline-flex;align-items:center;gap:8px;color:#89b7f1;font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;padding-top:20px}
+.chapter-deco:before{content:'';width:28px;height:1px;background:#5e8ec8}
+#sumate{scroll-margin-top:calc(var(--header) + 18px)}
+#sumate + .section{padding-top:80px}
+@media(max-width:920px){.chapter-wrap{grid-template-columns:1fr}.chapter-head .chapter-description{max-width:660px}.chapter-head{padding:52px 0}.chapter-head .chapter-index{font-size:160px;top:20%;right:8px}}
+@media(max-width:700px){.chapter-head{padding:48px 0}.chapter-head h2{font-size:clamp(38px,10vw,58px)}.chapter-head .chapter-description{font-size:14px}.chapter-head .chapter-index{font-size:125px}.back-to-top{right:15px;bottom:15px}}
+@media(prefers-reduced-motion:reduce){.back-to-top{transition:none}}
+
+/* Cada apartado se monta exclusivamente en el panel principal.
+   La portada no contiene los apartados ni el footer. */
+body[data-vista="inicio"] .cta-strip {display:none !important}
+body[data-vista="inicio"] .home-hero {min-height:calc(100svh - var(--header));}
+body[data-vista="inicio"] #contenido {min-height:calc(100svh - var(--header));}
+#contenido {display:block; width:100%;}
+#contenido > section {animation:vista-entrada .48s cubic-bezier(.22,1,.36,1) both}
+@keyframes vista-entrada {from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
+/* La pestaña actual se destaca como un sitio multipágina, sin scroll anchors. */
+.nav a[aria-current="page"] {color:#fff}
+.nav a[aria-current="page"]:not(.nav-cta)::after {width:100%}
+@media (max-width:700px) {
+ body[data-vista="inicio"] .home-hero {min-height:calc(100svh - var(--header));}
+}
+@media (prefers-reduced-motion: reduce) {#contenido > section{animation:none}}
+
+/* Selector de idiomas de AeroGlobETec */
+.aero-lang{display:flex;align-items:center;gap:3px;padding:4px;border:1px solid rgba(152,187,230,.27);border-radius:30px;background:rgba(6,17,40,.55);margin:0 12px 0 4px;position:absolute;right:12px;top:13px;z-index:61} .aero-lang button{border:0;background:transparent;color:#a8c4e9;cursor:pointer;padding:8px 12px;border-radius:24px;font:700 12px/1 system-ui, sans-serif;transition:.25s}.aero-lang button[aria-pressed="true"]{color:#061023;background:#a8ccff}.aero-lang button:hover{color:#fff}.aero-lang button[aria-pressed="true"]:hover{color:#061023}@media(min-width:850px){.aero-lang{right:12px;top:50%;transform:translateY(-50%)} #site-nav{padding-right:120px}}@media(max-width:849px){.aero-lang{right:71px;top:20px}.aero-lang button{padding:6px 9px}}
+
+/* CMS extension, preserves the established visual identity. */
+.aero-extra{padding:65px 0 86px;background:var(--paper)}
+.aero-extra .shell{max-width:1170px;margin:auto;padding:0 28px}
+.aero-extra .aero-extra-card{background:white;border:1px solid #dbe5f2;border-radius:23px;box-shadow:0 16px 42px rgba(9,34,80,.07);padding:30px;margin:18px auto;display:grid;gap:20px;grid-template-columns:1fr}
+.aero-extra .aero-extra-card.with-photo{grid-template-columns:1fr 42%;align-items:center}
+.aero-extra h2{font-family:var(--display);font-size:clamp(28px,4vw,46px);color:#102747;margin:0 0 10px}
+.aero-extra .aero-extra-content{color:#455b75;line-height:1.8}
+.aero-extra img{width:100%;height:290px;object-fit:cover;border-radius:15px}
+.aero-custom-head .chapter-wrap{padding-bottom:70px}
+.aero-hidden{display:none!important}
+:root{--cms-blue:#7caef3;--cms-blue2:#3774bc}
+@media(max-width:720px){.aero-extra .aero-extra-card.with-photo{grid-template-columns:1fr}.aero-extra img{height:210px}.aero-extra .shell{padding:0 18px}}
+
+body[data-vista="inicio"] .site-footer {display:block !important;}
+.join-action .symbol-planet{display:flex;align-items:center;justify-content:center;height:62px;line-height:1;margin-bottom:12px}
+/* AeroGlobETec: fotos editables y galerías, sin modificar el diseño de la portada */
+.teacher-card .teacher-avatar:has(.aero-teacher-photo){overflow:hidden;position:relative;isolation:isolate}
+.teacher-card .teacher-avatar:has(.aero-teacher-photo.has-photo){width:100%;height:210px;border-radius:16px}
+.teacher-card .teacher-avatar .aero-teacher-photo{width:100%;height:100%;display:none;position:absolute;inset:0;object-fit:cover;object-position:center;border-radius:inherit}
+.teacher-card .teacher-avatar .aero-teacher-photo.has-photo{display:block}
+img[data-aero-image].aero-image-hidden{display:none!important}
+.aero-gallery{position:relative;padding:clamp(46px,6vw,90px) 0;background:#f2f6fc;color:#07172e}
+.aero-gallery .aero-gallery-header{display:flex;gap:20px;justify-content:space-between;align-items:end;margin-bottom:25px;flex-wrap:wrap}
+.aero-gallery .aero-gallery-kicker{text-transform:uppercase;letter-spacing:.17em;font-size:.74rem;font-weight:800;color:#4675bc;margin:0 0 8px}
+.aero-gallery h2{font-size:clamp(1.8rem,3.6vw,2.8rem);letter-spacing:-.045em;line-height:1.14;color:#06162b;margin:0}
+.aero-gallery .aero-gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.aero-gallery figure{margin:0;border:1px solid #d9e4f0;border-radius:19px;overflow:hidden;background:#fff;box-shadow:0 16px 35px #0e2b4c12;transition:transform .28s ease,box-shadow .28s ease}
+.aero-gallery figure:hover{transform:translateY(-4px);box-shadow:0 20px 40px #0e2b4c26}
+.aero-gallery figure img{display:block;width:100%;height:240px;object-fit:cover;background:#d9e4ee}
+.aero-gallery figure figcaption{padding:13px 16px;font-size:.93rem;line-height:1.5;color:#334961}
+.aero-gallery .aero-gallery-grid.featured figure:first-child{grid-column:span 2;grid-row:span 2}
+.aero-gallery .aero-gallery-grid.featured figure:first-child img{height:calc(480px + 17px)}
+.aero-gallery .aero-gallery-grid.filmstrip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:7px 3px 20px;gap:16px}
+.aero-gallery .aero-gallery-grid.filmstrip figure{min-width:min(72vw,390px);max-width:390px;flex:0 0 auto;scroll-snap-align:start}
+@media(max-width:760px){.aero-gallery .aero-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.aero-gallery figure img{height:165px}.aero-gallery .aero-gallery-grid.featured figure:first-child img{height:341px}}
+@media(max-width:480px){.aero-gallery .aero-gallery-grid{grid-template-columns:1fr}.aero-gallery .aero-gallery-grid.featured figure:first-child{grid-column:auto;grid-row:auto}.aero-gallery .aero-gallery-grid.featured figure:first-child img,.aero-gallery figure img{height:210px}}
+@media(prefers-reduced-motion:reduce){.aero-gallery figure{transition:none}}
+
+
+/* AeroGlobETec: los gráficos originales se mantienen hasta que se les asigne una foto */
+[data-aero-visual]{position:relative;isolation:isolate}
+[data-aero-visual].aero-visual-replaced > :not(.aero-visual-photo){display:none!important}
+[data-aero-visual] > .aero-visual-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block;border-radius:inherit;z-index:2}
+.blueprint.aero-visual-replaced{overflow:hidden;min-height:290px}
+.card-symbol.aero-visual-replaced{overflow:hidden;border-radius:14px}
+.process-bubble.aero-visual-replaced{overflow:hidden;border-radius:50%}
+.symbol-planet.aero-visual-replaced{overflow:hidden;border-radius:50%;min-height:82px;min-width:82px}
+</style><script id="aero-cms-config">window.AERO_BACKEND = {
+  url: "https://nveisqekmbcdvnuebice.supabase.co",
+  anonKey: "sb_publishable_Pjsh0xgZGNLchNWWNvTmfw_NllsCUSY"
+};</script>
+<style id="ajustes-diseno">
+/* Ajustes de diseño (2026-10): menos decoración, más lectura.
+   Solo estilos: no cambia el HTML ni los textos que maneja el editor del sitio. */
+h1,h2,h3{letter-spacing:-.025em}
+.home-hero h1{font-size:clamp(44px,6vw,72px);letter-spacing:-.035em;line-height:1.02}
+.inner-hero h1{font-size:clamp(40px,5.4vw,64px);letter-spacing:-.03em}
+.section-top h2,.big-heading{font-size:clamp(30px,3.6vw,46px);letter-spacing:-.03em;line-height:1.15}
+.chapter-head h2{font-size:clamp(34px,4.2vw,56px);letter-spacing:-.03em;line-height:1.08}
+.join-panel h2{font-size:clamp(32px,4vw,50px);letter-spacing:-.03em}
+
+/* Rótulos: texto normal en lugar de mayúsculas espaciadas */
+.eyebrow,.overline,.chapter-head .chapter-mark,.breadcrumbs,.card-number,.process-content .mini,
+.teacher-card .role,.footer-heading,.brand-caption,.aero-gallery .aero-gallery-kicker{
+  text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:600}
+.brand-caption{font-size:11.5px;font-weight:500}
+.eyebrow:before{display:none}
+.eyebrow{margin-bottom:16px}
+.overline,.chapter-head .chapter-mark{margin-bottom:12px}
+
+/* Decoración que no aporta información */
+.chapter-deco,.chapter-head .chapter-index,.stage-label,.float-chip,.visual-glow,.orbital-watermark,
+.orb-dot,.panel-corner,.panel-footer{display:none!important}
+.site-header:after{box-shadow:none;background:#3774bc}
+.space-bg:before{display:none}
+.starfield i{box-shadow:none;opacity:.35}
+.ring,.ring.r2,.ring.r3{animation:none!important}
+.explore-card:before,.blueprint:before{opacity:.35}
+.teacher-avatar{background:#112a52;border-radius:12px}
+
+/* Botones: sin saltos al pasar el mouse */
+.btn{border-radius:8px;font-weight:700;letter-spacing:0}
+.btn:hover{transform:none}
+
+/* Animaciones de entrada más cortas y suaves */
+.js [data-reveal]{transform:translateY(12px);transition-duration:.45s}
+.js [data-reveal].in-view{transform:none}
+
+/* Acceso a la plataforma (dentro de la cápsula de idioma) */
+.aero-login{display:inline-flex;align-items:center;gap:6px;color:#a8c4e9;font:600 12px/1 system-ui,sans-serif;padding:8px 11px 8px 9px;border-radius:24px;text-decoration:none;margin-right:3px;position:relative}
+.aero-login:after{content:'';position:absolute;right:-3px;top:7px;bottom:7px;width:1px;background:rgba(152,187,230,.27)}
+.aero-login:hover{color:#fff}
+.aero-login svg{width:15px;height:15px}
+@media(max-width:849px){.aero-login span{display:none}.aero-login{padding:6px 8px}}
+/* La cápsula de idioma ocupa su lugar dentro del encabezado (antes flotaba encima del menú) */
+.header-inner .aero-lang{position:static;transform:none;top:auto;right:auto;margin:0;flex:none}
+@media(min-width:921px){.header-inner .nav{margin-left:auto}.header-inner .aero-lang{margin-left:14px}}
+@media(max-width:1240px){.aero-login span{display:none}.aero-login{padding:6px 8px}}
+@media(max-width:920px){.header-inner .aero-lang{margin-left:auto;order:2}.header-inner .menu-button{order:3}}
+</style>
+</head>
+<body><a class="skip" href="#contenido">Saltar al contenido</a>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+<symbol id="i-arrow" viewbox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-people" viewbox="0 0 24 24"><circle cx="9" cy="8" fill="none" r="3" stroke="currentColor" stroke-width="1.8"></circle><path d="M3 20v-1a6 6 0 0 1 12 0v1H3Zm13-15a3 3 0 0 1 0 6m1 4a5 5 0 0 1 4 5h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-school" viewbox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14M2 21h20M8 21v-6h8v6M7 10h2m6 0h2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-route" viewbox="0 0 24 24"><circle cx="5" cy="18" fill="none" r="2" stroke="currentColor" stroke-width="1.7"></circle><circle cx="19" cy="6" fill="none" r="2" stroke="currentColor" stroke-width="1.7"></circle><path d="M7 18h7a5 5 0 0 0 0-10H9a3 3 0 0 1 0-6h8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.7"></path></symbol>
+<symbol id="i-at" viewbox="0 0 24 24"><circle cx="12" cy="12" fill="none" r="9" stroke="currentColor" stroke-width="1.8"></circle><path d="M17 12v3a2 2 0 0 0 4 0v-3M17 12a5 5 0 1 0-5 5 5 5 0 0 0 5-5Z" fill="none" stroke="currentColor" stroke-width="1.8"></path></symbol>
+<symbol id="i-mail" viewbox="0 0 24 24"><rect fill="none" height="14" rx="2" stroke="currentColor" stroke-width="1.8" width="20" x="2" y="5"></rect><path d="m3 7 9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.8"></path></symbol>
+<symbol id="i-form" viewbox="0 0 24 24"><path d="M7 3H4v18h16V8l-5-5H7Zm8 0v6h5M8 13h8M8 17h8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-flask" viewbox="0 0 24 24"><path d="M9 2h6m-5 0v7L4 19a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3L14 9V2M7 16h10" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-light" viewbox="0 0 24 24"><path d="M9 17h6M9.5 20h5M8 14a7 7 0 1 1 8 0c-1 1-1 3-4 3s-3-2-4-3Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-notes" viewbox="0 0 24 24"><rect fill="none" height="18" rx="2" stroke="currentColor" stroke-width="1.8" width="16" x="4" y="3"></rect><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-check" viewbox="0 0 24 24"><path d="m4 12 5 5L20 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></symbol>
+<symbol id="i-phone" viewbox="0 0 24 24"><path d="m7 3 3 4-2 3a17 17 0 0 0 6 6l3-2 4 3-2 4C9 22 2 15 3 5l4-2Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></symbol>
+<symbol id="i-orbit" viewbox="0 0 24 24"><circle cx="12" cy="12" fill="none" r="3" stroke="currentColor" stroke-width="1.6"></circle><ellipse cx="12" cy="12" fill="none" rx="11" ry="5" stroke="currentColor" stroke-width="1.5" transform="rotate(-30 12 12)"></ellipse></symbol>
+</svg>
+<header class="site-header"><div class="shell header-inner"><a aria-label="AeroGlobETec — ir al inicio" class="brand" href="#inicio"><span class="brand-mark"><img alt="" data-aero-image="img-1" data-aero-original-src="assets/logo-encabezado.webp" height="64" src="assets/logo-encabezado.webp" width="64"/></span><span><span class="brand-name">Aero<b>Glob</b>ETec</span><span class="brand-caption">Taller de la ETec · UM</span></span></a><button aria-controls="site-nav" aria-expanded="false" aria-label="Abrir menú" class="menu-button" id="menu-button"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button><nav aria-label="Navegación principal" class="nav" id="site-nav"><a aria-current="location" data-aero-edit="1" data-aero-en="Home" href="#inicio">Inicio</a><a data-aero-edit="2" data-aero-en="The workshop" href="#taller">El taller</a><a data-aero-edit="3" data-aero-en="Facilities" href="#instalaciones">Instalaciones</a><a data-aero-edit="4" data-aero-en="Organization" href="#organizacion">Organización</a><a data-aero-edit="5" data-aero-en="Teachers" href="#profes">Profes</a><a data-aero-edit="6" data-aero-en="Social" href="#redes">Redes</a><a class="nav-cta" data-aero-edit="7" data-aero-en="Sumate ↗" href="#sumate">Sumate ↗</a></nav><div aria-label="Language" class="aero-lang"><a class="aero-login" href="app/" data-es="Integrantes" data-en="Members" title="Plataforma de proyectos para integrantes"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Integrantes</span></a><button aria-pressed="true" data-lang="es" type="button">ES</button><button aria-pressed="false" data-lang="en" type="button">EN</button></div></div></header>
+<main id="contenido">
+<section class="home-hero space-bg" data-nav-section="" id="inicio"><div aria-hidden="true" class="starfield"></div><div class="shell home-grid"><div class="hero-copy"><p class="eyebrow" data-aero-edit="8" data-aero-en="Student workshop · ETec UM">Taller estudiantil · ETec UM</p><h1 data-aero-edit="9" data-aero-en="Ideas that go &lt;em&gt;further.&lt;/em&gt;">Ideas que<br/>llegan <em>más<br/>lejos.</em></h1><p class="hero-description" data-aero-edit="10" data-aero-en="We are AeroGlobETec: students from different grades who come together to research, suggest ideas, and turn them into projects through teamwork.">Somos AeroGlobETec: estudiantes de distintos años que se encuentran para investigar, proponer ideas y convertirlas en proyectos mediante el trabajo en equipo.</p><div class="actions"><a class="btn btn-primary" data-aero-edit="11" data-aero-en="Discover the workshop" href="#taller">Conocé el taller <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a><a class="btn btn-glass" data-aero-edit="12" data-aero-en="Join us ↗" href="#sumate">Quiero sumarme ↗</a></div><div class="tiny-facts"><div class="tiny-fact"><strong>1.º–6.º</strong><span>Estudiantes</span></div><div class="tiny-fact"><strong>ETec UM</strong><span>Nuestra escuela</span></div><div class="tiny-fact"><strong>En equipo</strong><span>Nuestra forma de crear</span></div></div></div>
+<div aria-label="Logotipo de AeroGlobETec: astronauta y satélite" class="orbital-stage"><div class="visual-glow"></div><div class="ring r4"></div><div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div><div class="orb-dot"></div><div class="orb-dot second"></div><div class="logo-orbit"><img alt="Emblema oficial de AeroGlobETec: astronauta rodeado por una órbita y un satélite" data-aero-image="img-2" data-aero-original-src="assets/emblema.webp" height="395" src="assets/emblema.webp" width="415"/></div><span class="float-chip fc1">INVESTIGACIÓN</span><span class="float-chip fc2">INNOVACIÓN · EQUIPO</span><span class="stage-label">Exploración / AeroGlobETec</span></div></div></section></main><template id="vista-sumate"><section class="chapter-head space-bg" data-nav-section="" id="sumate"><div aria-hidden="true" class="starfield"></div><div class="shell"><div class="chapter-wrap"><div data-reveal=""><p class="chapter-mark" data-aero-edit="13" data-aero-en="06 / GET INVOLVED">06 / FORMÁ PARTE</p><h2 data-aero-edit="14" data-aero-en="Your next idea starts here.">Tu próxima idea <em>empieza acá.</em></h2><p class="chapter-deco" data-aero-edit="15" data-aero-en="AeroGlobETec · ETec UM">AeroGlobETec · ETec UM</p></div><p class="chapter-description" data-aero-edit="16" data-aero-en="Want to be part of AeroGlobETec? Open the application form published by the workshop." data-reveal="">¿Querés ser parte de AeroGlobETec? Accedé al formulario de inscripción publicado por el taller.</p></div><span aria-hidden="true" class="chapter-index">06</span></div></section><section class="section"><div class="shell"><div class="join-panel" data-reveal=""><div><p class="eyebrow" data-aero-edit="17" data-aero-en="Workshop application">Formulario del taller</p><h2 data-aero-edit="18" data-aero-en="&lt;em&gt;Want to join?&lt;/em&gt;">¿Querés<br/><span style="color:#9fc4f5">ser parte?</span></h2><p data-aero-edit="19" data-aero-en="If you would like to explore the workshop and participate, complete the form shared on AeroGlobETec’s website. Google Forms will open in a new tab.">Si te gustaría conocer el taller y participar, completá el formulario que AeroGlobETec comparte en su sitio. Al tocar el botón se abrirá Google Forms en una pestaña nueva.</p></div><div class="join-action"><span aria-hidden="true" class="symbol symbol-planet" data-aero-visual="graphic-join-planet" data-aero-visual-alt="Planeta decorativo de Sumate"><svg fill="none" focusable="false" height="58" style="display:block;margin:auto" viewbox="0 0 64 64" width="58" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="31" r="13" stroke="currentColor" stroke-width="2.7"></circle><ellipse cx="32" cy="31" rx="27" ry="8.5" stroke="currentColor" stroke-width="2.7" transform="rotate(-23 32 31)"></ellipse><circle cx="38" cy="25" fill="currentColor" opacity=".85" r="2.3"></circle></svg></span><h3 data-aero-edit="20" data-aero-en="Your place in the workshop" style="font-size:25px;margin:0 0 9px">Tu lugar en el taller</h3><p data-aero-edit="21" data-aero-en="Official AeroGlobETec application form.">Formulario oficial de inscripción de AeroGlobETec.</p><a class="btn btn-primary" data-aero-edit="22" data-aero-en="Open application form" href="https://forms.gle/wpP9Mk6wiQh2uzLt5" rel="noopener noreferrer" target="_blank">Abrir formulario <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div></div></div></section><section class="section pale compact"><div class="shell split"><div data-reveal=""><p class="overline" data-aero-edit="23" data-aero-en="Need information?">¿Necesitás información?</p><h2 class="big-heading" data-aero-edit="24" data-aero-en="Let’s talk &lt;em&gt;about your idea.&lt;/em&gt;">Conversemos<br/><em>sobre tu idea.</em></h2></div><div class="text-col" data-reveal=""><p class="lead" data-aero-edit="25" data-aero-en="You can contact the workshop by email or find its social channels on the contact page.">Podés comunicarte con el taller a través de su correo electrónico o encontrar sus redes sociales en la página de contacto.</p><div class="actions"><a class="btn btn-dark" data-aero-edit="26" data-aero-en="Send an email" href="mailto:proyectoglobetec@etec.um.edu.ar">Enviar un correo <svg aria-hidden="true"><use href="#i-mail"></use></svg></a><a class="link-inline" data-aero-edit="27" data-aero-en="See social channels" href="#redes">Ver todas las redes <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div></div></div></section></template><template id="vista-redes"><section class="chapter-head space-bg" data-nav-section="" id="redes"><div aria-hidden="true" class="starfield"></div><div class="shell"><div class="chapter-wrap"><div data-reveal=""><p class="chapter-mark" data-aero-edit="28" data-aero-en="05 / COMMUNITY">05 / COMUNIDAD</p><h2 data-aero-edit="29" data-aero-en="Let’s stay connected.">Estamos <em>conectados.</em></h2><p class="chapter-deco" data-aero-edit="30" data-aero-en="AeroGlobETec · ETec UM">AeroGlobETec · ETec UM</p></div><p class="chapter-description" data-aero-edit="31" data-aero-en="Find us on social media or send us an email." data-reveal="">Encontranos en nuestras redes sociales o escribinos por correo electrónico.</p></div><span aria-hidden="true" class="chapter-index">05</span></div></section><section class="section"><div class="shell"><div class="section-top" data-reveal=""><div><p class="overline" data-aero-edit="32" data-aero-en="01 / Our social channels">01 / Nuestras redes</p><h2 data-aero-edit="33" data-aero-en="Follow us &lt;em&gt;on every channel.&lt;/em&gt;">Seguinos en<br/><em>cada canal.</em></h2></div><p data-aero-edit="34" data-aero-en="These are the accounts and email address listed on AeroGlobETec’s original website.">Estos son los usuarios y la dirección de correo que AeroGlobETec comparte en su sitio original.</p></div><div class="social-cards">
+<a class="social-card" data-aero-edit="35" data-aero-en='&lt;span aria-hidden="true" class="social-icon"&gt;◎&lt;/span&gt;&lt;div&gt;&lt;h3 data-aero-edit="36"&gt;Instagram&lt;/h3&gt;&lt;p data-aero-edit="37"&gt;@taller_aeroglobetec&lt;/p&gt;&lt;/div&gt;&lt;span aria-hidden="true" class="right-arrow"&gt;↗&lt;/span&gt;' data-reveal="" href="https://www.instagram.com/taller_aeroglobetec/" rel="noopener noreferrer" style="--delay:0ms" target="_blank"><span aria-hidden="true" class="social-icon">◎</span><div><h3 data-aero-edit="36" data-aero-en="Instagram">Instagram</h3><p data-aero-edit="37" data-aero-en="@taller_aeroglobetec">@taller_aeroglobetec</p></div><span aria-hidden="true" class="right-arrow">↗</span></a>
+<a class="social-card" data-aero-edit="38" data-aero-en='&lt;span aria-hidden="true" class="social-icon"&gt;𝕏&lt;/span&gt;&lt;div&gt;&lt;h3 data-aero-edit="39"&gt;Twitter / X&lt;/h3&gt;&lt;p data-aero-edit="40"&gt;@T_AeroGlobETec&lt;/p&gt;&lt;/div&gt;&lt;span aria-hidden="true" class="right-arrow"&gt;↗&lt;/span&gt;' data-reveal="" href="https://x.com/T_AeroGlobETec" rel="noopener noreferrer" style="--delay:60ms" target="_blank"><span aria-hidden="true" class="social-icon">𝕏</span><div><h3 data-aero-edit="39" data-aero-en="Twitter / X">Twitter / X</h3><p data-aero-edit="40" data-aero-en="@T_AeroGlobETec">@T_AeroGlobETec</p></div><span aria-hidden="true" class="right-arrow">↗</span></a>
+<a class="social-card" data-aero-edit="41" data-aero-en='&lt;span aria-hidden="true" class="social-icon"&gt;f&lt;/span&gt;&lt;div&gt;&lt;h3 data-aero-edit="42"&gt;Facebook&lt;/h3&gt;&lt;p data-aero-edit="43"&gt;@Taller_AeroGlobETec&lt;/p&gt;&lt;/div&gt;&lt;span aria-hidden="true" class="right-arrow"&gt;↗&lt;/span&gt;' data-reveal="" href="https://www.facebook.com/Taller_AeroGlobETec" rel="noopener noreferrer" style="--delay:90ms" target="_blank"><span aria-hidden="true" class="social-icon">f</span><div><h3 data-aero-edit="42" data-aero-en="Facebook">Facebook</h3><p data-aero-edit="43" data-aero-en="@Taller_AeroGlobETec">@Taller_AeroGlobETec</p></div><span aria-hidden="true" class="right-arrow">↗</span></a>
+<a class="social-card" data-aero-edit="44" data-aero-en='&lt;span aria-hidden="true" class="social-icon"&gt;@&lt;/span&gt;&lt;div&gt;&lt;h3 data-aero-edit="45"&gt;Correo electrónico&lt;/h3&gt;&lt;p data-aero-edit="46"&gt;proyectoglobetec@etec.um.edu.ar&lt;/p&gt;&lt;/div&gt;&lt;span aria-hidden="true" class="right-arrow"&gt;↗&lt;/span&gt;' data-reveal="" href="mailto:proyectoglobetec@etec.um.edu.ar" style="--delay:120ms"><span aria-hidden="true" class="social-icon">@</span><div><h3 data-aero-edit="45" data-aero-en="Correo electrónico">Correo electrónico</h3><p data-aero-edit="46" data-aero-en="proyectoglobetec@etec.um.edu.ar">proyectoglobetec@etec.um.edu.ar</p></div><span aria-hidden="true" class="right-arrow">↗</span></a></div></div></section><section class="section pale compact"><div class="shell split"><div data-reveal=""><p class="overline" data-aero-edit="47" data-aero-en="02 / Know us already?">02 / ¿Ya nos conocés?</p><h2 class="big-heading" data-aero-edit="48" data-aero-en="From following &lt;em&gt;to joining in.&lt;/em&gt;">Pasá de seguirnos<br/><em>a participar.</em></h2></div><div data-reveal=""><p class="lead" data-aero-edit="49" data-aero-en="If you would like to take part in workshop activities, you can access AeroGlobETec’s original application form.">Si te interesa participar en las actividades del taller, podés acceder al formulario original de AeroGlobETec.</p><a class="btn btn-dark" data-aero-edit="50" data-aero-en="How to join" href="#sumate">Cómo sumarme <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div></div></section></template><template id="vista-profes"><section class="chapter-head space-bg" data-nav-section="" id="profes"><div aria-hidden="true" class="starfield"></div><div class="shell"><div class="chapter-wrap"><div data-reveal=""><p class="chapter-mark" data-aero-edit="51" data-aero-en="04 / GUIDANCE">04 / ACOMPAÑAMIENTO</p><h2 data-aero-edit="52" data-aero-en="Teachers who guide us.">Docentes que <em>acompañan.</em></h2><p class="chapter-deco" data-aero-edit="53" data-aero-en="AeroGlobETec · ETec UM">AeroGlobETec · ETec UM</p></div><p class="chapter-description" data-aero-edit="54" data-aero-en="These are the teachers and their contact details, as listed on the original workshop website." data-reveal="">Estos son los profesores y sus medios de contacto tal como figuran en la página original del taller.</p></div><span aria-hidden="true" class="chapter-index">04</span></div></section><section class="section"><div class="shell"><div class="section-top" data-reveal=""><div><p class="overline" data-aero-edit="55" data-aero-en="01 / Teaching team">01 / Equipo docente</p><h2 data-aero-edit="56" data-aero-en="The people &lt;em&gt;behind our learning.&lt;/em&gt;">Las personas detrás<br/><em>del acompañamiento.</em></h2></div><p data-aero-edit="57" data-aero-en="You can contact them directly using the institutional addresses published by AeroGlobETec.">Podés escribirles directamente a las direcciones institucionales publicadas en AeroGlobETec.</p></div><div class="teachers"><article class="teacher-card" data-reveal="" style="--delay:0ms"><div class="teacher-avatar"><span class="teacher-initials">GP</span><img alt="Foto de María Gema Pont" class="aero-teacher-photo" data-aero-image="teacher-pont" loading="lazy"/></div><span class="role">Docente del taller</span><h3 data-aero-edit="58" data-aero-en="María Gema&lt;br/&gt;Pont">María Gema<br/>Pont</h3><a data-aero-edit="59" data-aero-en='&lt;svg aria-hidden="true"&gt;&lt;use href="#i-mail"&gt;&lt;/use&gt;&lt;/svg&gt;maria.pont@etec.um.edu.ar' href="mailto:maria.pont@etec.um.edu.ar"><svg aria-hidden="true"><use href="#i-mail"></use></svg>maria.pont@etec.um.edu.ar</a></article><article class="teacher-card" data-reveal="" style="--delay:70ms"><div class="teacher-avatar"><span class="teacher-initials">PF</span><img alt="Foto de Patricia Furci" class="aero-teacher-photo" data-aero-image="teacher-furci" loading="lazy"/></div><span class="role">Docente del taller</span><h3 data-aero-edit="60" data-aero-en="Patricia&lt;br/&gt;Furci">Patricia<br/>Furci</h3><a data-aero-edit="61" data-aero-en='&lt;svg aria-hidden="true"&gt;&lt;use href="#i-mail"&gt;&lt;/use&gt;&lt;/svg&gt;patricia.furci@etec.um.edu.ar' href="mailto:patricia.furci@etec.um.edu.ar"><svg aria-hidden="true"><use href="#i-mail"></use></svg>patricia.furci@etec.um.edu.ar</a></article><article class="teacher-card" data-reveal="" style="--delay:140ms"><div class="teacher-avatar"><span class="teacher-initials">MP</span><img alt="Foto de Mario Papetti Funes" class="aero-teacher-photo" data-aero-image="teacher-papetti" loading="lazy"/></div><span class="role">Docente del taller</span><h3 data-aero-edit="62" data-aero-en="Mario Papetti&lt;br/&gt;Funes">Mario Papetti<br/>Funes</h3><a data-aero-edit="63" data-aero-en='&lt;svg aria-hidden="true"&gt;&lt;use href="#i-mail"&gt;&lt;/use&gt;&lt;/svg&gt;mario.papetti@etec.um.edu.ar' href="mailto:mario.papetti@etec.um.edu.ar"><svg aria-hidden="true"><use href="#i-mail"></use></svg>mario.papetti@etec.um.edu.ar</a><a data-aero-edit="64" data-aero-en='&lt;svg aria-hidden="true"&gt;&lt;use href="#i-phone"&gt;&lt;/use&gt;&lt;/svg&gt;+54 9 261 566-4422' href="tel:+5492615664422"><svg aria-hidden="true"><use href="#i-phone"></use></svg>+54 9 261 566-4422</a></article></div></div></section><section class="section pale compact"><div class="shell split"><div data-reveal=""><p class="overline" data-aero-edit="65" data-aero-en="02 / Have questions?">02 / ¿Tenés consultas?</p><h2 class="big-heading" data-aero-edit="66" data-aero-en="&lt;em&gt;Write to our team.&lt;/em&gt;">Escribinos<br/><em>al taller.</em></h2></div><div data-reveal=""><p class="lead" data-aero-edit="67" data-aero-en="AeroGlobETec also has a general email address for inquiries.">También contamos con un correo general de AeroGlobETec para consultas.</p><a class="btn btn-dark" data-aero-edit="68" data-aero-en="Workshop email" href="mailto:proyectoglobetec@etec.um.edu.ar">Correo del taller <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div></div></section></template><template id="vista-organizacion"><section class="chapter-head space-bg" data-nav-section="" id="organizacion"><div aria-hidden="true" class="starfield"></div><div class="shell"><div class="chapter-wrap"><div data-reveal=""><p class="chapter-mark" data-aero-edit="69" data-aero-en="03 / OUR WAY OF WORKING">03 / NUESTRA FORMA DE TRABAJAR</p><h2 data-aero-edit="70" data-aero-en="How do we organize our work?">¿Cómo nos <em>organizamos?</em></h2><p class="chapter-deco" data-aero-edit="71" data-aero-en="AeroGlobETec · ETec UM">AeroGlobETec · ETec UM</p></div><p class="chapter-description" data-aero-edit="72" data-aero-en="We work in research teams: dividing tasks, setting guidelines, and writing a theoretical report for each investigation." data-reveal="">Trabajamos en equipos de investigación: distribuimos tareas, establecemos pautas y elaboramos un informe teórico de cada investigación.</p></div><span aria-hidden="true" class="chapter-index">03</span></div></section><section class="section pale"><div class="shell"><div class="section-top" data-reveal=""><div><p class="overline" data-aero-edit="73" data-aero-en="01 / Our workflow">01 / Nuestra forma de trabajar</p><h2 data-aero-edit="74" data-aero-en="From an idea &lt;em&gt;to a shared process.&lt;/em&gt;">De una idea<br/><em>a un proceso compartido.</em></h2></div><p data-aero-edit="75" data-aero-en="This sequence summarizes the method AeroGlobETec describes on its institutional website.">La secuencia resume la metodología que AeroGlobETec describe en su sitio institucional.</p></div>
+<div class="process-list"><article class="process-item" data-reveal=""><div class="process-bubble" data-aero-visual="graphic-process-topic" data-aero-visual-alt="Proceso 1: Elegimos una temática">01</div><div class="process-content"><span class="mini">El comienzo</span><h3 data-aero-edit="76" data-aero-en="Choose a topic">Elegimos una temática</h3><p data-aero-edit="77" data-aero-en="Students propose projects and teams investigate specific subjects.">Los estudiantes proponen proyectos y los equipos trabajan sobre temas específicos para investigar.</p></div></article>
+<article class="process-item" data-reveal=""><div class="process-bubble" data-aero-visual="graphic-process-tasks" data-aero-visual-alt="Proceso 2: Distribuimos las tareas">02</div><div class="process-content"><span class="mini">El equipo</span><h3 data-aero-edit="78" data-aero-en="Assign tasks">Distribuimos las tareas</h3><p data-aero-edit="79" data-aero-en="Each research group agrees on each member’s role according to the subject.">Cada grupo de investigación acuerda qué hará cada integrante según la temática que desarrolla.</p></div></article>
+<article class="process-item" data-reveal=""><div class="process-bubble" data-aero-visual="graphic-process-guidelines" data-aero-visual-alt="Proceso 3: Establecemos pautas">03</div><div class="process-content"><span class="mini">La organización</span><h3 data-aero-edit="80" data-aero-en="Set guidelines">Establecemos pautas</h3><p data-aero-edit="81" data-aero-en="We define working guidelines to steer our research.">Definimos criterios de trabajo que orientan el desarrollo de la investigación.</p></div></article>
+<article class="process-item" data-reveal=""><div class="process-bubble" data-aero-visual="graphic-process-report" data-aero-visual-alt="Proceso 4: Elaboramos un informe">04</div><div class="process-content"><span class="mini">El registro</span><h3 data-aero-edit="82" data-aero-en="Write a report">Elaboramos un informe</h3><p data-aero-edit="83" data-aero-en="We document the process through a theoretical report on the research performed.">Documentamos el trabajo mediante un informe teórico de la investigación realizada.</p></div></article></div></div></section><section class="section compact"><div class="shell split"><div data-reveal=""><p class="overline" data-aero-edit="84" data-aero-en="02 / What makes us different">02 / Algo que nos identifica</p><h2 class="big-heading" data-aero-edit="85" data-aero-en="Everyone &lt;em&gt;contributes to the team.&lt;/em&gt;">Cada persona<br/><em>aporta al equipo.</em></h2></div><div class="text-col" data-reveal=""><p class="lead" data-aero-edit="86" data-aero-en="The workshop is organized into research teams with shared responsibilities.">La organización del taller parte de equipos de investigación, en los que se comparten responsabilidades.</p><p data-aero-edit="87" data-aero-en="Want to meet the people who belong to the workshop and the teachers who support our activities?">Querés conocer quiénes forman parte del taller y a los docentes que acompañan las actividades.</p><a class="link-inline" data-aero-edit="88" data-aero-en="Meet our teachers" href="#profes">Conocé a los profes <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div></div></section></template><template id="vista-instalaciones"><section class="chapter-head space-bg" data-nav-section="" id="instalaciones"><div aria-hidden="true" class="starfield"></div><div class="shell"><div class="chapter-wrap"><div data-reveal=""><p class="chapter-mark" data-aero-edit="89" data-aero-en="02 / OUR SPACE">02 / NUESTRO ESPACIO</p><h2 data-aero-edit="90" data-aero-en="Our home base.">Nuestra <em>base.</em></h2><p class="chapter-deco" data-aero-edit="91" data-aero-en="AeroGlobETec · ETec UM">AeroGlobETec · ETec UM</p></div><p class="chapter-description" data-aero-edit="92" data-aero-en="We meet at the Technical Secondary School of the University of Mendoza to plan and develop our ideas." data-reveal="">Nos encontramos en la Escuela Secundaria Técnica de la Universidad de Mendoza para coordinar y desarrollar nuestras ideas.</p></div><span aria-hidden="true" class="chapter-index">02</span></div></section><section class="section"><div class="shell split"><div class="text-col" data-reveal=""><p class="overline" data-aero-edit="93" data-aero-en="01 / Our space">01 / Nuestro espacio</p><h2 class="big-heading" data-aero-edit="94" data-aero-en="It all starts &lt;em&gt;at ETec.&lt;/em&gt;">Todo comienza<br/><em>en la ETec.</em></h2><p class="lead" data-aero-edit="95" data-aero-en="The AeroGlobETec team works at the Technical Secondary School (ETec UM) of the University of Mendoza.">El trabajo del equipo AeroGlobETec se desarrolla en las instalaciones de la <strong>Escuela Secundaria Técnica (ETec UM) de la Universidad de Mendoza.</strong></p><p data-aero-edit="96" data-aero-en="At school, we coordinate most of our projects and also meet outside school hours to keep developing them.">En la escuela coordinamos la mayoría de nuestros proyectos y nos reunimos fuera del horario escolar para continuar con su desarrollo.</p><p data-aero-edit="97" data-aero-en="This space helps us organize our team, exchange ideas, and carry out our research.">Este espacio nos permite organizarnos como equipo, compartir ideas y sostener nuestras investigaciones.</p><a class="link-inline" data-aero-edit="98" data-aero-en="How we organize" href="#organizacion">Así nos organizamos <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div><div class="blueprint" data-aero-visual="graphic-school" data-aero-visual-alt="Ilustración de la escuela" data-parallax="" data-reveal=""><span class="bp-title">ESQUEMA ILUSTRATIVO / ESCUELA TÉCNICA</span><svg aria-hidden="true" fill="none" viewbox="0 0 540 360"><path d="M23 308H517M64 306V115L260 35l209 82v191M98 307V136l161-65 177 67v169" opacity=".87" stroke="currentColor" stroke-width="2.4"></path><path d="M258 70v237M64 115l196 81 209-79M98 137l161 77 177-76" opacity=".43" stroke="currentColor" stroke-width="1.6"></path><path d="M148 305v-66h68v66M299 305v-66h75v66M135 169v39h51v-39H135Zm94 36v-38h59v38h-59Zm82-33v37h55v-37h-55Z" stroke="currentColor" stroke-width="2.2"></path><path d="M165 239v-70M148 190h38M260 71v-24M317 87l78 31" opacity=".5" stroke="currentColor" stroke-width="1.2"></path><path d="M39 127H16M40 310H16M491 120h25M488 307h28M32 115v192M511 115v192" opacity=".7" stroke="currentColor" stroke-dasharray="6 8" stroke-width="1.2"></path><path d="M216 334h95m-47-11v24m-6-12 6-12 6 12" opacity=".65" stroke="currentColor"></path><circle cx="462" cy="43" opacity=".8" r="18" stroke="currentColor"></circle><path d="M461 17v-10m0 70V67M436 43h-11m72 0h-11" opacity=".7" stroke="currentColor"></path></svg><span class="bp-caption">BASE DE TRABAJO · MENDOZA</span></div></div><div class="fact-row" data-reveal=""><div class="fact-box"><b>ETec UM</b><small data-aero-edit="99" data-aero-en="Technical Secondary School">Escuela Secundaria Técnica</small></div><div class="fact-box"><b>Universidad de Mendoza</b><small data-aero-edit="100" data-aero-en="Educational institution">Institución educativa</small></div><div class="fact-box"><b>Fuera del horario escolar</b><small data-aero-edit="101" data-aero-en="Team work sessions">Encuentros de trabajo del equipo</small></div></div></section><section class="section pale compact"><div class="shell"><p class="overline" data-aero-edit="102" data-aero-en="02 / Why we meet" data-reveal="">02 / Para qué nos reunimos</p><div class="cards-grid"><article class="small-card" data-reveal=""><div class="card-symbol" data-aero-visual="graphic-facilities-meeting" data-aero-visual-alt="Tarjeta: Coordinar"><svg><use href="#i-people"></use></svg></div><h3 data-aero-edit="103" data-aero-en="Coordinate">Coordinar</h3><p data-aero-edit="104" data-aero-en="We coordinate the progress of most projects at school.">Organizamos el avance de la mayor parte de nuestros proyectos en la escuela.</p></article><article class="small-card" data-reveal="" style="--delay:70ms"><div class="card-symbol" data-aero-visual="graphic-facilities-sharing" data-aero-visual-alt="Tarjeta: Compartir"><svg><use href="#i-light"></use></svg></div><h3 data-aero-edit="105" data-aero-en="Share">Compartir</h3><p data-aero-edit="106" data-aero-en="We share our proposals and research with fellow team members.">Ponemos en común propuestas e investigaciones entre integrantes.</p></article><article class="small-card" data-reveal="" style="--delay:140ms"><div class="card-symbol" data-aero-visual="graphic-facilities-progress" data-aero-visual-alt="Tarjeta: Seguir avanzando"><svg><use href="#i-route"></use></svg></div><h3 data-aero-edit="107" data-aero-en="Keep moving forward">Seguir avanzando</h3><p data-aero-edit="108" data-aero-en="We meet outside school hours to continue developing our ideas.">Nos reunimos fuera del horario escolar para continuar desarrollando las ideas.</p></article></div></div></section></template><template id="vista-taller"><section class="chapter-head space-bg" data-nav-section="" id="taller"><div aria-hidden="true" class="starfield"></div><div class="shell"><div class="chapter-wrap"><div data-reveal=""><p class="chapter-mark" data-aero-edit="109" data-aero-en="01 / IDENTITY">01 / IDENTIDAD</p><h2 data-aero-edit="110" data-aero-en="Who are we?">¿Quiénes <em>somos?</em></h2><p class="chapter-deco" data-aero-edit="111" data-aero-en="AeroGlobETec · ETec UM">AeroGlobETec · ETec UM</p></div><p class="chapter-description" data-aero-edit="112" data-aero-en="A group of students of different ages united by curiosity, research, and the desire to bring their own ideas to life." data-reveal="">Un grupo de estudiantes de diferentes años que comparte la curiosidad de investigar y hacer realidad sus propias propuestas.</p></div><span aria-hidden="true" class="chapter-index">01</span></div></section><section class="section"><div class="shell split"><div class="text-col" data-reveal=""><p class="overline" data-aero-edit="113" data-aero-en="01 / Where we meet">01 / Nuestro punto de encuentro</p><h2 class="big-heading" data-aero-edit="114" data-aero-en="Curiosity &lt;em&gt;brings us together.&lt;/em&gt;">La curiosidad<br/><em>nos une.</em></h2><p class="lead" data-aero-edit="115" data-aero-en="AeroGlobETec brings together students from grades 1 through 6 at the Technical Secondary School of the University of Mendoza.">AeroGlobETec reúne a estudiantes de <strong>1.º a 6.º año</strong> de la Escuela Secundaria Técnica de la Universidad de Mendoza.</p><p data-aero-edit="116" data-aero-en="We research specific subjects and carry out projects proposed by the students themselves. Every idea is a chance to learn and build knowledge together.">Investigamos temas específicos y llevamos adelante proyectos planteados por los propios estudiantes que integran el taller. Cada idea es una oportunidad para aprender y construir conocimiento de manera compartida.</p><p data-aero-edit="117" data-aero-en="The workshop gives students of different ages a place to meet, exchange experiences, and work toward shared goals.">El taller es un espacio para encontrarnos entre estudiantes de distintas edades, intercambiar experiencias y trabajar con objetivos comunes.</p><a class="link-inline" data-aero-edit="118" data-aero-en="How do we organize our work?" href="#organizacion">¿Cómo nos organizamos? <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div><div class="logo-panel" data-reveal=""><span class="panel-corner">AEROGLOBETEC / IDENTIDAD</span><img alt="Logo oficial AeroGlobETec en versión clara" data-aero-image="img-3" loading="lazy" data-aero-original-src="assets/logo-claro.webp" height="1080" src="assets/logo-claro.webp" width="1080"/><span class="panel-footer">ETEC / UNIVERSIDAD DE MENDOZA</span></div></div></section><section class="section pale"><div class="shell"><div class="section-top" data-reveal=""><div><p class="overline" data-aero-edit="119" data-aero-en="02 / What we do">02 / Lo que hacemos</p><h2 data-aero-edit="120" data-aero-en="Three ideas that &lt;em&gt;define us.&lt;/em&gt;">Tres ideas que<br/><em>nos definen.</em></h2></div><p data-aero-edit="121" data-aero-en="These ideas underpin the work described on the workshop’s institutional site.">Son la base del trabajo descripto en el sitio institucional del taller.</p></div><div class="cards-grid"><article class="small-card" data-reveal=""><span class="card-symbol" data-aero-visual="graphic-workshop-research" data-aero-visual-alt="Tarjeta: Explorar temas"><svg><use href="#i-flask"></use></svg></span><span class="number">01 — INVESTIGAR</span><h3 data-aero-edit="122" data-aero-en="Explore topics">Explorar temas</h3><p data-aero-edit="123" data-aero-en="We investigate topics that spark our interest.">Abordamos temas de interés a través de la investigación.</p></article><article class="small-card" data-reveal="" style="--delay:75ms"><span class="card-symbol" data-aero-visual="graphic-workshop-projects" data-aero-visual-alt="Tarjeta: Crear proyectos"><svg><use href="#i-light"></use></svg></span><span class="number">02 — PROPONER</span><h3 data-aero-edit="124" data-aero-en="Build projects">Crear proyectos</h3><p data-aero-edit="125" data-aero-en="Projects grow from ideas proposed by workshop members.">Las propuestas surgen de las ideas de quienes participan del taller.</p></article><article class="small-card" data-reveal="" style="--delay:150ms"><span class="card-symbol" data-aero-visual="graphic-workshop-team" data-aero-visual-alt="Tarjeta: Trabajar juntos"><svg><use href="#i-people"></use></svg></span><span class="number">03 — COLABORAR</span><h3 data-aero-edit="126" data-aero-en="Work together">Trabajar juntos</h3><p data-aero-edit="127" data-aero-en="Teams divide tasks to move each topic forward.">Los equipos distribuyen tareas para avanzar con cada temática.</p></article></div></div></section></template><template id="vista-inicio"><section class="home-hero space-bg" data-nav-section="" id="inicio"><div aria-hidden="true" class="starfield"></div><div class="shell home-grid"><div class="hero-copy"><p class="eyebrow" data-aero-edit="128" data-aero-en="Student workshop · ETec UM">Taller estudiantil · ETec UM</p><h1 data-aero-edit="129" data-aero-en="Ideas that go &lt;em&gt;further.&lt;/em&gt;">Ideas que<br/>llegan <em>más<br/>lejos.</em></h1><p class="hero-description" data-aero-edit="130" data-aero-en="We are AeroGlobETec: students from different grades who come together to research, suggest ideas, and turn them into projects through teamwork.">Somos AeroGlobETec: estudiantes de distintos años que se encuentran para investigar, proponer ideas y convertirlas en proyectos mediante el trabajo en equipo.</p><div class="actions"><a class="btn btn-primary" data-aero-edit="131" data-aero-en="Discover the workshop" href="#taller">Conocé el taller <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a><a class="btn btn-glass" data-aero-edit="132" data-aero-en="Join us ↗" href="#sumate">Quiero sumarme ↗</a></div><div class="tiny-facts"><div class="tiny-fact"><strong data-aero-edit="136" data-aero-en="Grades 1–6">1.º–6.º</strong><span data-aero-edit="137" data-aero-en="Students">Estudiantes</span></div><div class="tiny-fact"><strong data-aero-edit="138" data-aero-en="ETec UM">ETec UM</strong><span data-aero-edit="139" data-aero-en="Our school">Nuestra escuela</span></div><div class="tiny-fact"><strong data-aero-edit="140" data-aero-en="As a team">En equipo</strong><span data-aero-edit="141" data-aero-en="How we create">Nuestra forma de crear</span></div></div></div>
+<div aria-label="Logotipo de AeroGlobETec: astronauta y satélite" class="orbital-stage"><div class="visual-glow"></div><div class="ring r4"></div><div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div><div class="orb-dot"></div><div class="orb-dot second"></div><div class="logo-orbit"><img alt="Emblema oficial de AeroGlobETec: astronauta rodeado por una órbita y un satélite" data-aero-image="img-4" data-aero-original-src="assets/emblema.webp" height="395" src="assets/emblema.webp" width="415"/></div><span class="float-chip fc1" data-aero-edit="142" data-aero-en="RESEARCH">INVESTIGACIÓN</span><span class="float-chip fc2" data-aero-edit="143" data-aero-en="INNOVATION · TEAM">INNOVACIÓN · EQUIPO</span><span class="stage-label" data-aero-edit="144" data-aero-en="Exploration / AeroGlobETec">Exploración / AeroGlobETec</span></div></div></section></template>
+<aside class="cta-strip"><div class="shell cta-inner"><div><h2>¿Querés ser parte de AeroGlobETec?</h2><p>Descubrí cómo sumarte al taller de la ETec.</p></div><a class="btn btn-primary" href="#sumate">Quiero sumarme <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a></div></aside>
+<footer class="site-footer"><div class="shell"><div class="footer-grid"><div class="footer-brand"><a class="brand" href="#inicio"><span class="brand-mark"><img alt="" data-aero-image="img-5" loading="lazy" data-aero-original-src="assets/logo-encabezado.webp" height="64" src="assets/logo-encabezado.webp" width="64"/></span><span><span class="brand-name">Aero<b>Glob</b>ETec</span><span class="brand-caption">Taller de la ETec · UM</span></span></a><p data-aero-edit="133" data-aero-en="Research, ideas, and collaborative work at the Technical High School of the University of Mendoza.">Investigación, ideas y trabajo colaborativo en la Escuela Secundaria Técnica de la Universidad de Mendoza.</p></div><div><p class="footer-heading" data-aero-edit="134" data-aero-en="Explore">Explorar</p><div class="footer-links"><a href="#taller">El taller</a><a href="#instalaciones">Instalaciones</a><a href="#organizacion">Cómo nos organizamos</a><a href="#profes">Profes</a></div></div><div><p class="footer-heading" data-aero-edit="135" data-aero-en="Connect">Conectar</p><div class="footer-links"><a href="#redes">Redes y contacto</a><a href="#sumate">Sumate al taller</a><a href="mailto:proyectoglobetec@etec.um.edu.ar">Correo del taller</a><a href="https://sites.google.com/alumno.etec.um.edu.ar/aeroglobetec/aeroglobetec" rel="noopener noreferrer" target="_blank">Sitio institucional original ↗</a></div></div></div><div class="footer-bottom"><span>© AeroGlobETec · Taller estudiantil · ETec UM</span><span>Contenido institucional tomado del sitio original del taller.</span></div></div></footer><a aria-label="Volver al inicio" class="back-to-top" href="#inicio">↑</a><script id="aero-cms-live">(function(){
+ 'use strict';
+ const CFG=window.AERO_BACKEND||{};
+ const BUILTIN=['inicio','taller','instalaciones','organizacion','profes','redes','sumate'];
+ const ORIG={nodes:{},images:{}};
+ let published=null; let previewMode=false; let lang='es';
+ try { lang=localStorage.getItem('aeroglob-lang')==='en'?'en':'es'; }catch(e){}
+ const copy={es:'ES',en:'EN'};
+ const cmsValid=()=>!window.AERO_PREVIEW && !location.href.startsWith('about:srcdoc') && /^https:\/\//.test(CFG.url||'') && !String(CFG.anonKey||'').includes('__AERO_') && !!CFG.anonKey;
+ const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function safeUrl(value){
+   const v=String(value||'').trim();
+   if(v.startsWith('#') && /^#[a-z0-9-]+$/i.test(v)) return v;
+   if(/^mailto:[^\s<>]+$/i.test(v))return v;
+   if(/^tel:[+0-9()\s-]+$/i.test(v))return v;
+   try {const u=new URL(v); return u.protocol==='https:' || u.protocol==='http:'?u.href:'';}catch(e){return '';}
+ }
+ function cleanHtml(html) {
+   let d=document.createElement('template');d.innerHTML=String(html??'');
+   let allowed=new Set(['STRONG','B','EM','I','U','BR','SPAN','P','A','UL','OL','LI','SUP','SUB','SMALL']);
+   const walk=(node)=>{
+     [...node.childNodes].forEach(c=>{
+       if(c.nodeType===8){c.remove();return;}
+       if(c.nodeType!==1){if(c.nodeType!==3)c.remove();return;}
+       if(!allowed.has(c.tagName)){c.replaceWith(document.createTextNode(c.textContent||''));return;}
+       const originalHref=c.getAttribute('href');
+       const originalClass=c.getAttribute('class')||'';
+       [...c.attributes].forEach(a=>c.removeAttribute(a.name));
+       if(c.tagName==='SPAN'){const safeClass=originalClass.split(/\s+/).filter(x=>['blue','accent','text-blue','gradient','highlight','social-icon','right-arrow'].includes(x)).join(' ');if(safeClass)c.className=safeClass;}
+       if(c.tagName==='A'){const url=safeUrl(originalHref); if(url)c.setAttribute('href',url);}
+       walk(c);
+     });
+   };
+   // Attributes are read before stripping for permitted links.
+   function getRawHref(el){return el.getAttribute('href')||'';}
+   walk(d.content);return d.innerHTML;
+ }
+ function cleanImage(v){
+   v=String(v||'');
+   return v.startsWith('data:image/png;base64,')||v.startsWith('data:image/webp;base64,')||v.startsWith('data:image/jpeg;base64,')||/^https:\/\//.test(v)||/^assets\/[\w.-]+\.(webp|png|jpe?g)$/i.test(v)?v:'';
+ }
+ function registerOriginals(){
+   // La web es una sola página HTML con vistas aisladas dentro de <template>.
+   // querySelectorAll(document) no recorre el contenido de los templates:
+   // registrar explícitamente cada fragmento para que el editor y ES/EN funcionen.
+   const roots=[document,...Array.from(document.querySelectorAll('template[id^="vista-"]'),t=>t.content)];
+   roots.forEach(root=>{
+     root.querySelectorAll('[data-aero-edit]').forEach(el=>{
+       const key=el.dataset.aeroEdit;
+       ORIG.nodes[key]={es:el.innerHTML,en:el.getAttribute('data-aero-en')||el.innerHTML,href:el.getAttribute('href')||''};
+     });
+     root.querySelectorAll('[data-aero-image]').forEach(el=>{ ORIG.images[el.dataset.aeroImage]=el.getAttribute('src'); });
+   });
+ }
+ function applyNode(el){
+   const key=el.dataset.aeroEdit;
+   const data=(published?.nodes||{})[key]||ORIG.nodes[key];if(!data)return;
+   const es=data.es===ORIG.nodes[key]?.es?data.es:cleanHtml(data.es),en=(data.en||data.es)===ORIG.nodes[key]?.en?(data.en||data.es):cleanHtml(data.en||data.es);
+   el.setAttribute('data-aero-es-original',es);el.setAttribute('data-aero-en',en);
+   el.innerHTML=lang==='en'?en:es;
+   if(el.tagName==='A' && data.href){const href=safeUrl(data.href);if(href)el.setAttribute('href',href);}
+ }
+ function applyAllNodes(){
+   // Aplicar de padre a hijo. Algunos enlaces editables contienen títulos
+   // igualmente editables; el padre recrea el DOM interno al traducirse.
+   function visit(root){
+     Array.from(root.querySelectorAll('[data-aero-edit]'))
+       .filter(el=>!el.parentElement?.closest('[data-aero-edit]'))
+       .forEach(el=>{applyNode(el);visit(el);});
+   }
+   visit(document);
+ }
+ function applyImages(){
+   document.querySelectorAll('[data-aero-image]').forEach(el=>{
+     const key=el.dataset.aeroImage;
+     const explicitlyDefined=published?.images&&Object.prototype.hasOwnProperty.call(published.images,key);
+     const img=cleanImage(explicitlyDefined?published.images[key]:ORIG.images[key]);
+     if(img){el.src=img;el.classList.add('has-photo');el.classList.remove('aero-image-hidden')}
+     else{el.removeAttribute('src');el.classList.remove('has-photo');el.classList.add('aero-image-hidden')}
+     const setting=published?.imageSettings?.[key]||{};
+     if(Number.isFinite(Number(setting.x))&&Number.isFinite(Number(setting.y))){el.style.objectPosition=Math.max(0,Math.min(100,Number(setting.x)))+'% '+Math.max(0,Math.min(100,Number(setting.y)))+'%';}
+   });
+ }
+
+ function applyVisuals(){
+   document.querySelectorAll('[data-aero-visual]').forEach(slot=>{
+     const id=slot.dataset.aeroVisual;
+     const setting=published?.visuals?.[id]||{};
+     const src=cleanImage(setting.src);
+     const old=slot.querySelector(':scope > img.aero-visual-photo');
+     if(!src){if(old)old.remove();slot.classList.remove('aero-visual-replaced');return;}
+     const photo=old||document.createElement('img');
+     if(!old){photo.className='aero-visual-photo';photo.loading='lazy';slot.append(photo);}
+     photo.src=src;
+     photo.alt=lang==='en'?(setting.altEn||setting.altEs||slot.dataset.aeroVisualAlt||''):(setting.altEs||slot.dataset.aeroVisualAlt||'');
+     const x=Number.isFinite(Number(setting.focusX))?Math.min(100,Math.max(0,Number(setting.focusX))):50;
+     const y=Number.isFinite(Number(setting.focusY))?Math.min(100,Math.max(0,Number(setting.focusY))):50;
+     photo.style.objectPosition=x+'% '+y+'%';
+     slot.classList.add('aero-visual-replaced');
+   });
+ }
+ function getPages(){
+   const standard=BUILTIN.map((id,i)=>({id,es:['Inicio','El taller','Instalaciones','Organización','Profes','Redes','Sumate'][i],en:['Home','The workshop','Facilities','Organization','Teachers','Social','Join us'][i],visible:true,custom:false}));
+   return Array.isArray(published?.pages) && published.pages.length ? published.pages : standard;
+ }
+ function createCustomPage(page){
+   if(!page.custom || !/^[a-z][a-z0-9-]{1,35}$/.test(page.id)||BUILTIN.includes(page.id))return;
+   let template=document.getElementById('vista-'+page.id);
+   if(!template){template=document.createElement('template');template.id='vista-'+page.id;document.body.appendChild(template);}
+   let titleEs=cleanHtml(page.titleEs||page.es),titleEn=cleanHtml(page.titleEn||page.en),subEs=cleanHtml(page.subtitleEs||''),subEn=cleanHtml(page.subtitleEn||'');
+   template.innerHTML=`<section class="chapter-head space-bg aero-custom-head" id="${page.id}" data-nav-section><div class="starfield" aria-hidden="true"></div><div class="shell"><div class="chapter-wrap"><div class="chapter-copy"><p class="eyebrow" data-aero-cms-es="${escapeHTML(page.es)}" data-aero-cms-en="${escapeHTML(page.en)}">${escapeHTML(page.es)}</p><h1 class="chapter-title" data-aero-cms-es="${escapeHTML(titleEs)}" data-aero-cms-en="${escapeHTML(titleEn)}">${titleEs}</h1><p data-aero-cms-es="${escapeHTML(subEs)}" data-aero-cms-en="${escapeHTML(subEn)}">${subEs}</p></div></div></div></section>`;
+ }
+ function updateMenu(){
+   const menu=document.getElementById('site-nav');if(!menu)return;
+   const pages=getPages();
+   const allowed=pages.filter(p=>p.visible!==false);
+   allowed.forEach((p,i)=>{
+     if(p.custom)createCustomPage(p);
+     let a=menu.querySelector('a[href="#'+p.id+'"]');
+     if(!a){a=document.createElement('a');a.href='#'+p.id;menu.appendChild(a);}
+     a.classList.toggle('nav-cta',p.id==='sumate');
+     a.style.order=String(i);
+     a.dataset.aeroNavEs=p.es||p.id;a.dataset.aeroNavEn=p.en||p.es||p.id;
+     if(!a.hasAttribute('data-aero-edit')) a.textContent=lang==='en'?a.dataset.aeroNavEn:a.dataset.aeroNavEs;
+     a.style.display='';
+   });
+   [...menu.querySelectorAll('a')].forEach(a=>{ if(!allowed.some(p=>'#'+p.id===a.getAttribute('href')))a.style.display='none'; });
+   window.aeroRefreshNavigation?.(allowed.map(p=>p.id),Object.fromEntries(allowed.map(p=>[p.id,p.es])));
+ }
+ function renderBlocks(pageId){
+   const destination=document.getElementById(pageId);if(!destination)return;
+   document.querySelectorAll('main .aero-extra').forEach(el=>el.remove());
+   const blocks=(published?.blocks||[]).filter(b=>b.page===pageId);
+   if(!blocks.length)return;
+   const wrap=document.createElement('section');wrap.className='aero-extra';
+   const shell=document.createElement('div');shell.className='shell';wrap.appendChild(shell);
+   for(const block of blocks){
+     const card=document.createElement('article');card.className='aero-extra-card';
+     const img=cleanImage(block.imageUrl);
+     if(img)card.classList.add('with-photo');
+     const text=document.createElement('div');
+     const h=document.createElement('h2');h.innerHTML=cleanHtml((lang==='en'?block.titleEn:block.titleEs)||block.titleEs||'');
+     const body=document.createElement('div');body.className='aero-extra-content';body.innerHTML=cleanHtml((lang==='en'?block.bodyEn:block.bodyEs)||block.bodyEs||'');
+     text.append(h,body);card.appendChild(text);
+     if(img){const el=document.createElement('img');el.src=img;el.alt='';el.loading='lazy';card.appendChild(el);}
+     shell.appendChild(card);
+   }
+   destination.insertAdjacentElement('afterend',wrap);
+ }
+ function renderGallery(pageId){
+   document.querySelectorAll('main .aero-gallery').forEach(el=>el.remove());
+   const destination=document.getElementById(pageId);if(!destination)return;
+   const galleries=published?.galleries||{};
+   const g=galleries[pageId];if(!g||!Array.isArray(g.items)||!g.items.length)return;
+   const section=document.createElement('section');section.className='aero-gallery';
+   const shell=document.createElement('div');shell.className='shell';section.append(shell);
+   const header=document.createElement('div');header.className='aero-gallery-header';
+   const title=document.createElement('div');
+   const kicker=document.createElement('p');kicker.className='aero-gallery-kicker';kicker.textContent=lang==='en'?'PHOTO GALLERY':'GALERÍA DE FOTOS';
+   const h=document.createElement('h2');h.textContent=(lang==='en'?(g.titleEn||g.titleEs):(g.titleEs||'Galería'));
+   title.append(kicker,h);header.append(title);shell.append(header);
+   const layout=['grid','featured','filmstrip'].includes(g.layout)?g.layout:'grid';
+   const grid=document.createElement('div');grid.className='aero-gallery-grid '+layout;
+   for(const item of g.items){
+     const src=cleanImage(item.src);if(!src)continue;
+     const fig=document.createElement('figure');const img=document.createElement('img');img.loading='lazy';img.src=src;
+     img.alt=lang==='en'?(item.altEn||item.altEs||''):(item.altEs||'');
+     img.style.objectPosition=Math.max(0,Math.min(100,Number(item.focusX??50)))+'% '+Math.max(0,Math.min(100,Number(item.focusY??50)))+'%';
+     fig.append(img);
+     const caption=lang==='en'?(item.captionEn||item.captionEs):(item.captionEs||'');
+     if(caption){const fc=document.createElement('figcaption');fc.textContent=caption;fig.append(fc);}
+     grid.append(fig);
+   }
+   shell.append(grid);
+   document.getElementById('contenido').appendChild(section);
+ }
+ function applyLanguage(){
+   document.documentElement.lang=lang;
+   applyAllNodes();applyImages();applyVisuals();
+   document.querySelectorAll('#site-nav a').forEach(a=>{
+     const page=getPages().find(p=>'#'+p.id===a.getAttribute('href'));
+     if(page){a.innerHTML=escapeHTML(lang==='en'?page.en:page.es);}
+   });
+   document.querySelectorAll('.brand-caption').forEach(el=>el.textContent=lang==='en'?'ETec workshop · UM':'Taller de la ETec · UM');
+   document.querySelectorAll('[data-aero-cms-es]').forEach(el=>el.innerHTML=cleanHtml(el.getAttribute(lang==='en'?'data-aero-cms-en':'data-aero-cms-es')));
+   document.querySelectorAll('.aero-lang button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));
+   window.aeroRenderCustomBlocks?.(window.aeroCurrentRoute||'inicio');
+   renderGallery(window.aeroCurrentRoute||'inicio');
+ }
+ window.aeroApplyLanguage=applyLanguage;
+ window.aeroPageVisible=id=>getPages().some(p=>p.id===id&&p.visible!==false);
+ window.aeroRenderCustomBlocks=renderBlocks;
+ function applyPublishedState(data){
+   published=data && typeof data==='object'?data:null;
+   const theme=published?.theme||{};
+   if(/^#[0-9a-fA-F]{6}$/.test(theme.blue||''))document.documentElement.style.setProperty('--blue',theme.blue);
+   if(/^#[0-9a-fA-F]{6}$/.test(theme.blue2||''))document.documentElement.style.setProperty('--blue2',theme.blue2);
+   updateMenu();applyAllNodes();applyImages();applyVisuals();
+   window.aeroRefreshCurrent?.();applyLanguage();
+ }
+ async function pull(){
+   if(!cmsValid() || previewMode)return;
+   try{
+     const base=CFG.url.replace(/\/$/,'')+'/rest/v1/aero_published?id=eq.main&select=';
+     const get=async fields=>{
+       const res=await fetch(base+fields,{headers:{apikey:CFG.anonKey,Accept:'application/json'},cache:'no-store'});
+       if(!res.ok)throw Error('HTTP '+res.status);
+       return (await res.json())?.[0];
+     };
+     const current=await get('version');
+     if(!current || current.version===window.aeroCmsVersion)return;
+     const row=await get('content,version');
+     if(row){
+       window.aeroCmsVersion=row.version;applyPublishedState(row.content);
+       try{localStorage.setItem('aero-published-cache',JSON.stringify({version:row.version,content:row.content}))}catch(e){}
+     }
+   }catch(err){console.warn('AeroGlobETec: sin conexión al contenido publicado, se mantiene el contenido actual.',err.message);}
+ }
+ window.aeroPreviewDraft=(data)=>{previewMode=true;applyPublishedState(data)};
+ registerOriginals();
+ document.querySelectorAll('.aero-lang button').forEach(button=>button.addEventListener('click',()=>{
+   lang=button.dataset.lang==='en'?'en':'es';
+   try{localStorage.setItem('aeroglob-lang',lang)}catch(e){}
+   applyLanguage();
+ }));
+ applyLanguage();
+ // Mostrar al instante lo último publicado que se vio en este navegador; pull() confirma si cambió
+ if(cmsValid() && !previewMode){
+   try{
+     const cached=JSON.parse(localStorage.getItem('aero-published-cache')||'null');
+     if(cached && cached.content && typeof cached.content==='object'){window.aeroCmsVersion=cached.version;applyPublishedState(cached.content);}
+   }catch(e){}
+ }
+ pull();
+ setInterval(()=>{if(!document.hidden)pull()},30000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});
+})();</script><script>
+(() => {
+  'use strict';
+  document.documentElement.classList.add('js');
+  let valid = ['inicio','taller','instalaciones','organizacion','profes','redes','sumate'];
+  const labels = {inicio:'Inicio',taller:'El taller',instalaciones:'Instalaciones',organizacion:'Organización',profes:'Profes',redes:'Redes',sumate:'Sumate'};
+  const main = document.getElementById('contenido');
+  const header = document.querySelector('.site-header');
+  const menu = document.getElementById('site-nav');
+  const toggle = document.getElementById('menu-button');
+  const topLink = document.querySelector('.back-to-top');
+  const motionOK = !matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let navLinks = [...menu.querySelectorAll('a')];
+  let current = null;
+  let seed = 18355;
+  const random = () => {seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+  try {history.scrollRestoration='manual';}catch(e){}
+
+  function getRoute() {
+    let hash;
+    try {hash = decodeURIComponent(location.hash.slice(1)).toLowerCase();}
+    catch (_) {hash='inicio';}
+    return valid.includes(hash) && window.aeroPageVisible?.(hash)!==false ? hash : 'inicio';
+  }
+  function closeMenu() {
+    menu.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    toggle.setAttribute('aria-label','Abrir menú');
+  }
+  toggle.addEventListener('click', () => {
+    const open = !menu.classList.contains('open');
+    menu.classList.toggle('open',open);
+    toggle.setAttribute('aria-expanded',String(open));
+    toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');
+  });
+  document.addEventListener('keydown', e => {if(e.key==='Escape')closeMenu();});
+  document.addEventListener('pointerdown', e => {if(!e.target.closest('.site-header'))closeMenu();});
+
+  function createStarfield() {
+    main.querySelectorAll('.starfield').forEach(holder => {
+      holder.replaceChildren();
+      const count=holder.closest('.home-hero') ? (innerWidth<620?40:76) : (innerWidth<620?19:34);
+      const fragment=document.createDocumentFragment();
+      for(let i=0;i<count;i++) {
+        const dot=document.createElement('i');
+        dot.style.left=(1+random()*98).toFixed(2)+'%';
+        dot.style.top=(3+random()*92).toFixed(2)+'%';
+        const size=(.8+random()*2.3).toFixed(2)+'px';
+        dot.style.width=size;
+        dot.style.height=size;
+        dot.style.opacity=(.2+random()*.65).toFixed(2);
+        fragment.appendChild(dot);
+      }
+      holder.appendChild(fragment);
+    });
+  }
+  function activateReveals() {
+    const elements=[...main.querySelectorAll('[data-reveal]')];
+    if(!('IntersectionObserver' in window)) {elements.forEach(el=>el.classList.add('in-view'));return;}
+    const observer=new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){entry.target.classList.add('in-view');observer.unobserve(entry.target);}
+      });
+    },{threshold:.02,rootMargin:'0px 0px 90px 0px'});
+    elements.forEach(el=>observer.observe(el));
+  }
+  function orbitMouse() {
+    const stage=main.querySelector('.orbital-stage');
+    if(!stage || !motionOK || !matchMedia('(pointer:fine)').matches) return;
+    let targetX=0,targetY=0,x=0,y=0,active=false;
+    const frame=() => {
+      if(!stage.isConnected){active=false;return;}
+      x+=(targetX-x)*.082; y+=(targetY-y)*.082;
+      stage.style.setProperty('--mx',x.toFixed(2)+'px');
+      stage.style.setProperty('--my',y.toFixed(2)+'px');
+      if(Math.abs(targetX-x)+Math.abs(targetY-y)>.5) requestAnimationFrame(frame);
+      else active=false;
+    };
+    const start=() => {if(!active){active=true;requestAnimationFrame(frame);}};
+    stage.addEventListener('pointermove',e=>{
+      const r=stage.getBoundingClientRect();
+      targetX=(e.clientX-r.left-r.width/2)*.15;
+      targetY=(e.clientY-r.top-r.height/2)*.15;
+      start();
+    });
+    stage.addEventListener('pointerleave',()=>{targetX=0;targetY=0;start();});
+  }
+  function updateScroll() {
+    const top=scrollY || 0;
+    const max=document.documentElement.scrollHeight-innerHeight;
+    header.style.setProperty('--scroll-progress',(max>0?top/max*100:0)+'%');
+    header.classList.toggle('scrolled',top>12);
+    topLink?.classList.toggle('visible',top>700);
+    const stage=main.querySelector('.orbital-stage');
+    if(stage && motionOK)stage.style.setProperty('--parallax',Math.min(top,800)+'px');
+  }
+  let scrollPending=false;
+  addEventListener('scroll', () => {
+    if(!scrollPending){scrollPending=true;requestAnimationFrame(()=>{updateScroll();scrollPending=false;});}
+  },{passive:true});
+
+  function show(route, push=false) {
+    if(!valid.includes(route) || window.aeroPageVisible?.(route)===false) route='inicio';
+    if(push && location.hash!=='#'+route)history.pushState({route},'', '#'+route);
+    // Replacing the content is the key guarantee: ONLY the selected page exists
+    // in the active document. Other sections remain inert inside <template> tags.
+    const template=document.getElementById('vista-'+route);
+    if(!template) return;
+    main.replaceChildren(template.content.cloneNode(true));
+    current=route;
+    window.aeroCurrentRoute=route;
+    window.aeroRenderCustomBlocks?.(route);
+    window.aeroApplyLanguage?.();
+    document.body.dataset.vista=route;
+    navLinks.forEach(link => {
+      if(link.getAttribute('href')==='#'+route)link.setAttribute('aria-current','page');
+      else link.removeAttribute('aria-current');
+    });
+    document.title=(route==='inicio'?'AeroGlobETec':labels[route]+' · AeroGlobETec')+' | ETec UM';
+    closeMenu();
+    document.documentElement.style.scrollBehavior='auto';
+    window.scrollTo(0,0);
+    document.documentElement.style.scrollBehavior='';
+    createStarfield();
+    activateReveals();
+    orbitMouse();
+    requestAnimationFrame(updateScroll);
+  }
+  document.addEventListener('click', event => {
+    const link=event.target.closest('a[href^="#"]');
+    if(!link || event.defaultPrevented || event.button!==0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
+    const route=link.getAttribute('href').slice(1);
+    if(!valid.includes(route) || window.aeroPageVisible?.(route)===false)return;
+    event.preventDefault();
+    if(route===current) {
+      closeMenu();
+      window.scrollTo({top:0,behavior:motionOK?'smooth':'instant'});
+    } else show(route,true);
+  });
+  addEventListener('popstate',()=>show(getRoute()));
+  addEventListener('hashchange',()=>{if(getRoute()!==current)show(getRoute());});
+  window.aeroRefreshNavigation = (ids, names) => {
+    valid = ids;
+    Object.assign(labels, names);
+    navLinks=[...menu.querySelectorAll('a')];
+  };
+  window.aeroRefreshCurrent = () => show(getRoute());
+  show(getRoute());
+})();
+</script><script>
+(() => {
+  const link = document.querySelector('.aero-login span');
+  if (!link) return;
+  const update = () => {
+    let lang = 'es';
+    try { lang = localStorage.getItem('aeroglob-lang') === 'en' ? 'en' : 'es'; } catch (e) {}
+    link.textContent = link.parentElement.dataset[lang];
+  };
+  document.querySelectorAll('.aero-lang button').forEach(b => b.addEventListener('click', () => setTimeout(update, 0)));
+  update();
+})();
+</script>
+</body></html>

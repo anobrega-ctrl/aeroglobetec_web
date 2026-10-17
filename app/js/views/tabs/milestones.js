@@ -5,8 +5,8 @@ export async function renderMilestones(el, ctx) {
   const [milestones, tasks] = await Promise.all([api.milestones(project.id), api.tasks(project.id)]);
 
   el.innerHTML = `<div class="tab-root">
-    <div class="toolbar"><p class="muted grow">Los hitos marcan las fechas importantes del proyecto. Las tareas se pueden asociar a un hito.</p>
-      ${staff ? '<button class="btn primary" id="new-ms">+ Nuevo hito</button>' : ''}</div>
+    <div class="toolbar"><span class="grow"></span>
+      ${staff ? '<button class="btn primary" id="new-ms">Nuevo hito</button>' : ''}</div>
     ${milestones.length ? `<ol class="milestones">${milestones.map(m => {
       const n = daysUntil(m.due_date);
       const ts = tasks.filter(t => t.milestone_id === m.id);

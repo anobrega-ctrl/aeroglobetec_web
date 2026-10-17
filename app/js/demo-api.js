@@ -2,7 +2,67 @@
 // Sirve para probar la interfaz sin login. Repite las reglas principales de permisos
 // de supabase/schema.sql, pero la seguridad real está solo en la base de datos.
 
-const KEY = 'age-demo-v2';
+const KEY = 'age-demo-v4';
+
+// Presentación de ejemplo (la misma que supabase/presentacion_dron_rover.sql)
+const ROVER_MD = `# Dron Rover · CATE 2027
+
+Un dron tipo autito que llega a la zona de misión, se despliega por su cuenta y recorre el terreno como un rover. Es el proyecto del taller AeroGlobETec para el CATE 2027.
+
+## La misión
+
+- **Desplegarse solo:** al llegar a la zona, el dron se acomoda, extiende sus ruedas y su antena y pasa a modo rover sin que nadie lo toque.
+- **Reconocer el terreno:** recorre la zona con cámara y sensores, esquiva obstáculos y registra lo que encuentra.
+- **Transmitir los datos:** manda video y telemetría en vivo a la estación de tierra y vuelve al punto de recuperación al terminar.
+
+## Fases
+
+1. **Llegada:** el dron llega a la zona de misión plegado, con las ruedas y la antena guardadas.
+2. **Despliegue:** ya en el suelo, extiende las ruedas y la antena y pasa a modo rover.
+3. **Exploración:** recorre el terreno con cámara y sensores y manda video y datos a la estación de tierra.
+4. **Retorno:** termina el recorrido, vuelve al punto de recuperación y la estación guarda todo lo registrado.
+
+## El sistema
+
+### Dron rover
+- Chasis compacto con ruedas y antena que se despliegan
+- Tracción en las 4 ruedas para terreno irregular
+- Cámara frontal y sensores de distancia para evitar choques
+- Batería propia y electrónica de control a bordo
+- Modo manual (FPV) y modo autónomo
+
+### Estación de tierra
+- Enlace de radio con el dron para comandos y telemetría
+- Recepción de video en vivo
+- Interfaz para seguir el estado de la misión
+- Registro de los datos para analizarlos después
+
+## Subsistemas
+
+- **Estructura:** diseño CAD, impresión 3D y el mecanismo que pasa al dron de plegado a modo rover.
+- **Movilidad:** motores, drivers y control de velocidad y giro en terreno irregular.
+- **Energía:** batería, reguladores y protecciones.
+- **Comunicaciones:** comandos, telemetría y video entre el dron y la estación de tierra.
+- **Sensores:** cámara, sensores de distancia, IMU y sensores ambientales.
+- **Software:** firmware del dron, secuencia de despliegue automática e interfaz de la estación de tierra.
+
+## Paso a paso
+
+1. **Requisitos y concepto:** leer el reglamento del CATE, definir la misión, armar los equipos y fijar qué tiene que cumplir cada subsistema.
+2. **Diseño preliminar:** CAD del dron, elección de componentes, presupuesto y revisión con los docentes.
+3. **Prototipo:** primer dron funcionando y pruebas del mecanismo de despliegue por separado.
+4. **Integración:** unir los subsistemas, despliegue automático y estación de tierra funcionando.
+5. **Pruebas de campo:** misiones completas en terreno real, corrección de fallas y documentación.
+6. **CATE 2027:** presentación del proyecto y demostración del despliegue en vivo.
+
+## Áreas de trabajo
+
+- **Mecánica:** CAD, impresión 3D, chasis y mecanismo de despliegue.
+- **Electrónica:** motores, drivers, batería y placas.
+- **Software:** firmware, control autónomo y estación de tierra.
+- **Comunicaciones:** radio, antenas, telemetría y video.
+- **Documentación:** informes, registro de pruebas y presentación final.
+`;
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 const day = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
@@ -54,7 +114,7 @@ function seed() {
     u('Esquema de alimentación v1', 'Subo el esquema con regulador buck de 5 V.', ele, sofia, 'pendiente', null, '', 6, tasks[4].id),
     u('Tracción básica funcionando', 'El ESP32 ya mueve los 4 motores con PWM.', sw, valen, 'aprobado', 7, 'Bien. Falta el control de giro.', 70, tasks[6].id),
   ];
-  const project = { id: P, name: 'Dron Rover CATE 2027', description: 'Dron tipo autito que se despliega en la zona de misión y explora como rover.', color: '#3774bc', archived: false, created_by: doc, created_at: ago(400) };
+  const project = { id: P, name: 'Dron Rover CATE 2027', description: 'Dron tipo autito que se despliega en la zona de misión y explora como rover.', color: '#3774bc', archived: false, presentation: ROVER_MD, created_by: doc, created_at: ago(400) };
   const P2 = uid();
   const project2 = { id: P2, name: 'Globo sonda', description: 'Medición de variables atmosféricas.', color: '#9b7bf0', archived: false, created_by: doc, created_at: ago(900) };
   return {
@@ -89,6 +149,35 @@ function seed() {
       { id: 2, user_id: lider, project_id: P, message: 'Te asignaron la tarea "Interfaz de la estación de tierra"', link: `#/proyecto/${P}/tareas`, read: true, created_at: ago(60) },
     ],
     seq: 100,
+    ...demoExtras(P, { mec, ele }, { doc, lider, tomas, sofia, mateo }),
+  };
+}
+
+// Ensayos, fallas, equipos y turnos de ejemplo
+function demoExtras(P, { mec, ele }, { doc, lider, tomas, sofia, mateo }) {
+  const T1 = uid(), T2 = uid();
+  const eq = [
+    { id: uid(), name: 'Impresora 3D', description: 'Impresora FDM del taller', color: '#3774bc', active: true },
+    { id: uid(), name: 'Estación de soldado', description: 'Soldador y estación de aire caliente', color: '#ffb454', active: true },
+    { id: uid(), name: 'Osciloscopio', description: 'Osciloscopio digital de 2 canales', color: '#4fbf8b', active: true },
+  ];
+  const at = (d, h) => { const x = new Date(); x.setDate(x.getDate() + d); x.setHours(h, 0, 0, 0); return x.toISOString(); };
+  return {
+    tests: [
+      { id: T1, project_id: P, area_id: mec, title: 'Prueba de tracción en rampa', test_date: day(-3), objective: 'Subir una rampa de 20°', result: 'parcial', notes: 'Sube hasta 15°. En 20° las ruedas patinan.', attachments: [], author_id: tomas, created_at: ago(72) },
+      { id: T2, project_id: P, area_id: ele, title: 'Consumo de motores en vacío', test_date: day(-1), objective: 'Medir corriente de los 4 motores', result: 'exitoso', notes: '180 mA por motor en vacío. Dentro de lo esperado.', attachments: [], author_id: sofia, created_at: ago(24) },
+    ],
+    issues: [
+      { id: uid(), project_id: P, test_id: T1, area_id: mec, title: 'Las ruedas patinan en pendientes', description: 'Con más de 15° de inclinación pierde tracción.', severity: 'alta', status: 'en_proceso', assignee_id: mateo, resolution: '', created_by: tomas, resolved_at: null, created_at: ago(70) },
+      { id: uid(), project_id: P, test_id: null, area_id: ele, title: 'El regulador calienta', description: 'Después de 10 min el regulador de 5 V levanta mucha temperatura.', severity: 'media', status: 'abierta', assignee_id: sofia, resolution: '', created_by: lider, resolved_at: null, created_at: ago(30) },
+      { id: uid(), project_id: P, test_id: null, area_id: null, title: 'Antena floja', description: 'Se movía con las vibraciones.', severity: 'baja', status: 'resuelta', assignee_id: tomas, resolution: 'Se pegó con epoxi.', created_by: doc, resolved_at: ago(48), created_at: ago(90) },
+    ],
+    equipment: eq,
+    reservations: [
+      { id: uid(), equipment_id: eq[0].id, project_id: P, area_id: mec, user_id: tomas, starts_at: at(1, 14), ends_at: at(1, 17), purpose: 'Soportes de motores' },
+      { id: uid(), equipment_id: eq[1].id, project_id: P, area_id: ele, user_id: sofia, starts_at: at(2, 15), ends_at: at(2, 17), purpose: 'Placa de alimentación' },
+      { id: uid(), equipment_id: eq[2].id, project_id: P, area_id: ele, user_id: sofia, starts_at: at(3, 14), ends_at: at(3, 16), purpose: 'Medir PWM' },
+    ],
   };
 }
 
@@ -161,7 +250,7 @@ export const api = {
   async deleteProject(id) {
     if (!staff()) deny();
     const areaIds = db.areas.filter(a => a.project_id === id).map(a => a.id);
-    for (const k of ['members', 'areas', 'milestones', 'tasks', 'updates', 'files', 'inventory', 'activity', 'notifications']) {
+    for (const k of ['members', 'areas', 'milestones', 'tasks', 'updates', 'files', 'inventory', 'activity', 'notifications', 'tests', 'issues', 'reservations']) {
       db[k] = db[k].filter(r => r.project_id !== id);
     }
     db.areas = db.areas.filter(a => !areaIds.includes(a.id));
@@ -308,10 +397,12 @@ export const api = {
 
   // ---------- Comentarios ----------
   async comments(updateId) { return clone(db.comments.filter(c => c.update_id === updateId)).sort((a, b) => a.created_at.localeCompare(b.created_at)); },
-  async addComment(updateId, body) {
+  async addComment(updateId, body, mentions = []) {
     const u = db.updates.find(x => x.id === updateId);
-    db.comments.push({ id: uid(), update_id: updateId, author_id: db.me, body, created_at: now() });
-    notify(u.author_id, u.project_id, `Nuevo comentario en tu avance "${u.title}"`, `#/proyecto/${u.project_id}/avances`);
+    const lnk = `#/proyecto/${u.project_id}/avances`;
+    db.comments.push({ id: uid(), update_id: updateId, author_id: db.me, body, mentions, created_at: now() });
+    mentions.filter(m => isMember(u.project_id, m)).forEach(m => notify(m, u.project_id, `${nm(db.me)} te mencionó en "${u.title}"`, lnk));
+    if (!mentions.includes(u.author_id)) notify(u.author_id, u.project_id, `Nuevo comentario en tu avance "${u.title}"`, lnk);
     save();
   },
 
@@ -393,5 +484,95 @@ export const api = {
         progress: ts.length ? Math.round(100 * ts.filter(t => t.status === 'hecha').length / ts.length) : 0,
       };
     }).sort((a, b) => a.area_name.localeCompare(b.area_name));
+  },
+
+  // ---------- Ensayos y fallas ----------
+  async tests(pid) { return clone(db.tests.filter(t => t.project_id === pid)).sort((a, b) => b.test_date.localeCompare(a.test_date) || b.created_at.localeCompare(a.created_at)); },
+  async saveTest(t, files = [], keep = []) {
+    if (!canView(t.project_id)) deny();
+    const attachments = [...keep, ...(await this.uploadFiles(t.project_id, 'ensayos', files))];
+    const row = db.tests.find(x => x.id === t.id);
+    if (row) {
+      if (!staff() && row.author_id !== db.me) deny();
+      Object.assign(row, t, { attachments });
+      save();
+      return row.id;
+    }
+    const id = uid();
+    db.tests.push({ area_id: null, objective: '', notes: '', created_at: now(), ...t, id, author_id: db.me, attachments });
+    log(t.project_id, 'ensayo', `Registró el ensayo "${t.title}" (${t.result})`);
+    save();
+    return id;
+  },
+  async deleteTest(t) {
+    if (!staff() && t.author_id !== db.me) deny();
+    db.tests = db.tests.filter(x => x.id !== t.id);
+    db.issues.forEach(i => { if (i.test_id === t.id) i.test_id = null; });
+    save();
+  },
+  async issues(pid) { return clone(db.issues.filter(i => i.project_id === pid)).sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+  async saveIssue(i) {
+    const row = db.issues.find(x => x.id === i.id);
+    const pid = row?.project_id || i.project_id;
+    const lnk = `#/proyecto/${pid}/ensayos`;
+    if (i.assignee_id && !isMember(pid, i.assignee_id)) throw new Error('La persona asignada no es miembro del proyecto');
+    if (row) {
+      if (!staff() && row.created_by !== db.me && row.assignee_id !== db.me) deny();
+      if (i.assignee_id && i.assignee_id !== row.assignee_id) notify(i.assignee_id, pid, `Te asignaron la falla "${row.title}"`, lnk);
+      if (i.status && i.status !== row.status) {
+        log(pid, 'falla', `${i.status === 'resuelta' ? 'Resolvió' : i.status === 'abierta' ? 'Reabrió' : 'Empezó a trabajar en'} la falla "${row.title}"`);
+        if (i.status === 'resuelta') notify(row.created_by, pid, `Se resolvió la falla "${row.title}"`, lnk);
+        row.resolved_at = i.status === 'resuelta' ? now() : null;
+      }
+      Object.assign(row, i);
+    } else {
+      if (!canView(pid)) deny();
+      db.issues.push({ id: uid(), test_id: null, area_id: null, description: '', severity: 'media', status: 'abierta', assignee_id: null, resolution: '', created_at: now(), resolved_at: null, ...i, created_by: db.me });
+      log(pid, 'falla', `Reportó la falla "${i.title}"`);
+      notify(i.assignee_id, pid, `Te asignaron la falla "${i.title}"`, lnk);
+    }
+    save();
+  },
+  async deleteIssue(id) {
+    const row = db.issues.find(x => x.id === id);
+    if (!staff() && row.created_by !== db.me) deny();
+    db.issues = db.issues.filter(x => x.id !== id);
+    save();
+  },
+
+  // ---------- Equipos y turnos ----------
+  async equipment() { return clone(db.equipment).sort((a, b) => a.name.localeCompare(b.name)); },
+  async saveEquipment(e) {
+    if (!staff()) deny();
+    const row = db.equipment.find(x => x.id === e.id);
+    if (row) Object.assign(row, e);
+    else db.equipment.push({ id: uid(), description: '', color: '#3774bc', active: true, ...e });
+    save();
+  },
+  async agenda(from, to) {
+    return clone(db.reservations.filter(r => new Date(r.starts_at) < to && new Date(r.ends_at) > from).map(r => {
+      const p = db.projects.find(x => x.id === r.project_id);
+      return { ...r, project_name: p?.name, project_color: p?.color, area_name: db.areas.find(a => a.id === r.area_id)?.name || null, user_name: nm(r.user_id) };
+    })).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  },
+  async saveReservation(r) {
+    const row = db.reservations.find(x => x.id === r.id);
+    if (row && !staff() && row.user_id !== db.me) deny();
+    const next = { ...(row || {}), ...r };
+    if (!canView(next.project_id)) throw new Error('Solo podés reservar para un proyecto del que sos miembro');
+    if (new Date(next.ends_at) <= new Date(next.starts_at)) throw new Error('El turno tiene que terminar después de empezar');
+    if (new Date(next.ends_at) - new Date(next.starts_at) > 12 * 3600000) throw new Error('Un turno puede durar como máximo 12 horas');
+    if (!db.equipment.find(e => e.id === next.equipment_id)?.active) throw new Error('Ese equipo no está disponible para reservar');
+    const clash = db.reservations.find(x => x.id !== next.id && x.equipment_id === next.equipment_id && new Date(x.starts_at) < new Date(next.ends_at) && new Date(x.ends_at) > new Date(next.starts_at));
+    if (clash) throw new Error(`Ese horario se superpone con un turno de "${db.projects.find(p => p.id === clash.project_id)?.name}"`);
+    if (row) Object.assign(row, r);
+    else db.reservations.push({ id: uid(), area_id: null, purpose: '', created_at: now(), ...r, user_id: db.me });
+    save();
+  },
+  async deleteReservation(id) {
+    const row = db.reservations.find(x => x.id === id);
+    if (!staff() && row.user_id !== db.me) deny();
+    db.reservations = db.reservations.filter(x => x.id !== id);
+    save();
   },
 };

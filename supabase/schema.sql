@@ -57,6 +57,8 @@ create table if not exists public.projects (
   created_by   uuid references public.profiles(id) on delete set null,
   created_at   timestamptz not null default now()
 );
+-- Ficha del proyecto (texto con formato simple, lo editan docentes y líderes)
+alter table public.projects add column if not exists presentation text not null default '';
 
 create table if not exists public.project_members (
   project_id  uuid not null references public.projects(id) on delete cascade,
@@ -130,6 +132,7 @@ create table if not exists public.comments (
   body        text not null check (length(trim(body)) > 0),
   created_at  timestamptz not null default now()
 );
+alter table public.comments add column if not exists mentions uuid[] not null default '{}';
 
 create table if not exists public.project_files (
   id           uuid primary key default gen_random_uuid(),
@@ -513,10 +516,20 @@ create or replace function public.track_comments() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   u record;
+  lnk text;
+  m uuid;
 begin
   select project_id, author_id, title into u from updates where id = new.update_id;
-  perform notify(u.author_id, u.project_id, 'Nuevo comentario en tu avance "' || u.title || '"',
-    '#/proyecto/' || u.project_id || '/avances');
+  lnk := '#/proyecto/' || u.project_id || '/avances';
+  -- Menciones: solo se avisa a miembros del proyecto
+  foreach m in array coalesce(new.mentions, '{}') loop
+    if exists (select 1 from project_members where project_id = u.project_id and user_id = m) then
+      perform notify(m, u.project_id, display_name(new.author_id) || ' te mencionó en "' || u.title || '"', lnk);
+    end if;
+  end loop;
+  if not (u.author_id = any(coalesce(new.mentions, '{}'))) then
+    perform notify(u.author_id, u.project_id, 'Nuevo comentario en tu avance "' || u.title || '"', lnk);
+  end if;
   return new;
 end $$;
 
@@ -680,7 +693,12 @@ alter table public.notifications   enable row level security;
 do $$
 declare r record;
 begin
-  for r in select policyname, tablename from pg_policies where schemaname = 'public' loop
+  -- Solo las tablas de la plataforma: las demás tablas del proyecto conservan sus reglas
+  for r in select policyname, tablename from pg_policies
+           where schemaname = 'public'
+             and tablename in ('profiles', 'admins', 'projects', 'project_members', 'areas', 'area_members',
+                               'milestones', 'tasks', 'updates', 'comments', 'project_files', 'inventory',
+                               'activity', 'notifications', 'tests', 'issues', 'equipment', 'reservations') loop
     execute format('drop policy %I on public.%I', r.policyname, r.tablename);
   end loop;
 end $$;
@@ -794,3 +812,387 @@ create policy proyectos_insert on storage.objects for insert to authenticated
   with check (bucket_id = 'proyectos' and public.can_view_project(public.storage_project(name)));
 create policy proyectos_delete on storage.objects for delete to authenticated
   using (bucket_id = 'proyectos' and (owner = auth.uid() or public.is_staff()));
+
+-- =====================================================================
+-- Ensayos, fallas y turnos de equipos
+-- =====================================================================
+
+do $$ begin
+  create type public.test_result as enum ('exitoso', 'parcial', 'fallido');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.issue_status as enum ('abierta', 'en_proceso', 'resuelta');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.issue_severity as enum ('baja', 'media', 'alta', 'critica');
+exception when duplicate_object then null; end $$;
+
+-- Registro de ensayos (pruebas de campo, de banco, etc.)
+create table if not exists public.tests (
+  id           uuid primary key default gen_random_uuid(),
+  project_id   uuid not null references public.projects(id) on delete cascade,
+  area_id      uuid references public.areas(id) on delete set null,
+  title        text not null check (length(trim(title)) > 0),
+  test_date    date not null default current_date,
+  objective    text not null default '',
+  result       public.test_result not null,
+  notes        text not null default '',
+  attachments  jsonb not null default '[]'::jsonb,
+  author_id    uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  created_at   timestamptz not null default now()
+);
+
+-- Fallas encontradas (pueden venir de un ensayo o no)
+create table if not exists public.issues (
+  id           uuid primary key default gen_random_uuid(),
+  project_id   uuid not null references public.projects(id) on delete cascade,
+  test_id      uuid references public.tests(id) on delete set null,
+  area_id      uuid references public.areas(id) on delete set null,
+  title        text not null check (length(trim(title)) > 0),
+  description  text not null default '',
+  severity     public.issue_severity not null default 'media',
+  status       public.issue_status not null default 'abierta',
+  assignee_id  uuid references public.profiles(id) on delete set null,
+  resolution   text not null default '',
+  created_by   uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  resolved_at  timestamptz,
+  created_at   timestamptz not null default now()
+);
+
+-- Equipos e instrumentos del taller que se reservan por turnos
+create table if not exists public.equipment (
+  id           uuid primary key default gen_random_uuid(),
+  name         text not null unique check (length(trim(name)) > 0),
+  description  text not null default '',
+  color        text not null default '#3774bc',
+  active       boolean not null default true,
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists public.reservations (
+  id            uuid primary key default gen_random_uuid(),
+  equipment_id  uuid not null references public.equipment(id) on delete cascade,
+  project_id    uuid not null references public.projects(id) on delete cascade,
+  area_id       uuid references public.areas(id) on delete set null,
+  user_id       uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  starts_at     timestamptz not null,
+  ends_at       timestamptz not null,
+  purpose       text not null default '',
+  created_at    timestamptz not null default now(),
+  check (ends_at > starts_at),
+  check (ends_at - starts_at <= interval '12 hours')
+);
+
+create index if not exists tests_project_idx on public.tests(project_id, test_date desc);
+create index if not exists issues_project_idx on public.issues(project_id, status);
+create index if not exists reservations_time_idx on public.reservations(equipment_id, starts_at);
+
+-- Ensayos: el autor y el área tienen que ser del proyecto
+create or replace function public.guard_test() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'INSERT' then
+    new.author_id := coalesce(auth.uid(), new.author_id);
+  elsif new.author_id <> old.author_id or new.project_id <> old.project_id then
+    raise exception 'No se puede cambiar el autor ni el proyecto de un ensayo';
+  end if;
+  if new.area_id is not null and not exists (select 1 from areas where id = new.area_id and project_id = new.project_id) then
+    raise exception 'El área no pertenece a este proyecto';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_test on public.tests;
+create trigger guard_test before insert or update on public.tests
+  for each row execute function public.guard_test();
+
+-- Fallas: coherencia con el proyecto y fecha de resolución automática
+create or replace function public.guard_issue() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'INSERT' then
+    new.created_by := coalesce(auth.uid(), new.created_by);
+  elsif new.created_by <> old.created_by or new.project_id <> old.project_id then
+    raise exception 'No se puede cambiar el autor ni el proyecto de una falla';
+  end if;
+  if new.area_id is not null and not exists (select 1 from areas where id = new.area_id and project_id = new.project_id) then
+    raise exception 'El área no pertenece a este proyecto';
+  end if;
+  if new.test_id is not null and not exists (select 1 from tests where id = new.test_id and project_id = new.project_id) then
+    raise exception 'El ensayo no pertenece a este proyecto';
+  end if;
+  if new.assignee_id is not null and not exists (select 1 from project_members where project_id = new.project_id and user_id = new.assignee_id) then
+    raise exception 'La persona asignada no es miembro del proyecto';
+  end if;
+  if new.status = 'resuelta' and (tg_op = 'INSERT' or old.status <> 'resuelta') then
+    new.resolved_at := now();
+  elsif new.status <> 'resuelta' then
+    new.resolved_at := null;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_issue on public.issues;
+create trigger guard_issue before insert or update on public.issues
+  for each row execute function public.guard_issue();
+
+-- Turnos: sin superposición en el mismo equipo y siempre a nombre de un miembro del proyecto
+create or replace function public.guard_reservation() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  clash record;
+begin
+  if tg_op = 'INSERT' then
+    new.user_id := coalesce(auth.uid(), new.user_id);
+  end if;
+  if new.ends_at <= new.starts_at then
+    raise exception 'El turno tiene que terminar después de empezar';
+  end if;
+  if new.ends_at - new.starts_at > interval '12 hours' then
+    raise exception 'Un turno puede durar como máximo 12 horas';
+  end if;
+  if not exists (select 1 from equipment where id = new.equipment_id and active) then
+    raise exception 'Ese equipo no está disponible para reservar';
+  end if;
+  if new.area_id is not null and not exists (select 1 from areas where id = new.area_id and project_id = new.project_id) then
+    raise exception 'El área no pertenece a este proyecto';
+  end if;
+
+  -- Bloquear el equipo mientras se revisa, para que dos reservas simultáneas no se pisen
+  perform 1 from equipment where id = new.equipment_id for update;
+  select r.starts_at, r.ends_at, p.name into clash
+  from reservations r join projects p on p.id = r.project_id
+  where r.equipment_id = new.equipment_id
+    and r.id <> new.id
+    and tstzrange(r.starts_at, r.ends_at) && tstzrange(new.starts_at, new.ends_at)
+  limit 1;
+  if found then
+    raise exception 'Ese horario se superpone con un turno de "%" (% a %)', clash.name,
+      to_char(clash.starts_at at time zone 'America/Argentina/Buenos_Aires', 'DD/MM HH24:MI'),
+      to_char(clash.ends_at at time zone 'America/Argentina/Buenos_Aires', 'HH24:MI');
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists guard_reservation on public.reservations;
+create trigger guard_reservation before insert or update on public.reservations
+  for each row execute function public.guard_reservation();
+
+-- Bitácora y avisos
+create or replace function public.track_tests_issues() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  lnk text := '#/proyecto/' || new.project_id || '/ensayos';
+begin
+  if tg_table_name = 'tests' then
+    perform log_activity(new.project_id, 'ensayo', 'Registró el ensayo "' || new.title || '" (' || new.result || ')');
+  elsif tg_op = 'INSERT' then
+    perform log_activity(new.project_id, 'falla', 'Reportó la falla "' || new.title || '"');
+    perform notify(new.assignee_id, new.project_id, 'Te asignaron la falla "' || new.title || '"', lnk);
+  else
+    if new.assignee_id is distinct from old.assignee_id then
+      perform notify(new.assignee_id, new.project_id, 'Te asignaron la falla "' || new.title || '"', lnk);
+    end if;
+    if new.status <> old.status then
+      perform log_activity(new.project_id, 'falla',
+        case new.status when 'resuelta' then 'Resolvió la falla "' when 'abierta' then 'Reabrió la falla "' else 'Empezó a trabajar en la falla "' end
+        || new.title || '"');
+      if new.status = 'resuelta' then
+        perform notify(new.created_by, new.project_id, 'Se resolvió la falla "' || new.title || '"', lnk);
+      end if;
+    end if;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists track_tests on public.tests;
+create trigger track_tests after insert on public.tests
+  for each row execute function public.track_tests_issues();
+drop trigger if exists track_issues on public.issues;
+create trigger track_issues after insert or update on public.issues
+  for each row execute function public.track_tests_issues();
+
+-- Permisos
+alter table public.tests        enable row level security;
+alter table public.issues       enable row level security;
+alter table public.equipment    enable row level security;
+alter table public.reservations enable row level security;
+
+drop policy if exists tests_select on public.tests;
+drop policy if exists tests_insert on public.tests;
+drop policy if exists tests_update on public.tests;
+drop policy if exists tests_delete on public.tests;
+drop policy if exists issues_select on public.issues;
+drop policy if exists issues_insert on public.issues;
+drop policy if exists issues_update on public.issues;
+drop policy if exists issues_delete on public.issues;
+drop policy if exists equipment_select on public.equipment;
+drop policy if exists equipment_write on public.equipment;
+drop policy if exists reservations_select on public.reservations;
+drop policy if exists reservations_insert on public.reservations;
+drop policy if exists reservations_update on public.reservations;
+drop policy if exists reservations_delete on public.reservations;
+
+-- Ensayos: cualquier miembro registra; edita el autor o docentes/líderes
+create policy tests_select on public.tests for select to authenticated using (public.can_view_project(project_id));
+create policy tests_insert on public.tests for insert to authenticated
+  with check (public.can_view_project(project_id) and author_id = auth.uid());
+create policy tests_update on public.tests for update to authenticated
+  using (public.is_staff() or author_id = auth.uid()) with check (public.is_staff() or author_id = auth.uid());
+create policy tests_delete on public.tests for delete to authenticated
+  using (public.is_staff() or author_id = auth.uid());
+
+-- Fallas: cualquier miembro reporta; actualizan quien la reportó, quien la tiene asignada o docentes/líderes
+create policy issues_select on public.issues for select to authenticated using (public.can_view_project(project_id));
+create policy issues_insert on public.issues for insert to authenticated
+  with check (public.can_view_project(project_id) and created_by = auth.uid());
+create policy issues_update on public.issues for update to authenticated
+  using (public.is_staff() or created_by = auth.uid() or assignee_id = auth.uid())
+  with check (public.can_view_project(project_id));
+create policy issues_delete on public.issues for delete to authenticated
+  using (public.is_staff() or created_by = auth.uid());
+
+-- Equipos: los ve cualquiera con cuenta; los cargan docentes/líderes
+create policy equipment_select on public.equipment for select to authenticated using (true);
+create policy equipment_write on public.equipment for all to authenticated
+  using (public.is_staff()) with check (public.is_staff());
+
+-- Turnos: la agenda se lee con reservation_agenda(); cada uno maneja los suyos
+create policy reservations_select on public.reservations for select to authenticated
+  using (public.is_staff() or user_id = auth.uid() or public.can_view_project(project_id));
+create policy reservations_insert on public.reservations for insert to authenticated
+  with check (user_id = auth.uid() and public.can_view_project(project_id));
+create policy reservations_update on public.reservations for update to authenticated
+  using (public.is_staff() or user_id = auth.uid())
+  with check ((public.is_staff() or user_id = auth.uid()) and public.can_view_project(project_id));
+create policy reservations_delete on public.reservations for delete to authenticated
+  using (public.is_staff() or user_id = auth.uid());
+
+-- Agenda de turnos: todos ven qué equipo está ocupado y por qué proyecto, aunque no sean miembros
+create or replace function public.reservation_agenda(desde timestamptz, hasta timestamptz)
+returns table (
+  id uuid, equipment_id uuid, project_id uuid, project_name text, project_color text,
+  area_id uuid, area_name text, user_id uuid, user_name text,
+  starts_at timestamptz, ends_at timestamptz, purpose text
+)
+language sql stable security definer set search_path = public as $$
+  select r.id, r.equipment_id, r.project_id, p.name, p.color, r.area_id, a.name,
+         r.user_id, coalesce(nullif(pr.full_name, ''), pr.email), r.starts_at, r.ends_at, r.purpose
+  from reservations r
+  join projects p on p.id = r.project_id
+  left join areas a on a.id = r.area_id
+  join profiles pr on pr.id = r.user_id
+  where auth.uid() is not null and r.starts_at < hasta and r.ends_at > desde
+  order by r.starts_at;
+$$;
+revoke execute on function public.reservation_agenda(timestamptz, timestamptz) from public, anon;
+grant execute on function public.reservation_agenda(timestamptz, timestamptz) to authenticated;
+
+-- Equipos de ejemplo (se pueden editar o desactivar desde la plataforma)
+insert into public.equipment (name, description, color) values
+  ('Impresora 3D', 'Impresora FDM del taller', '#3774bc'),
+  ('Estación de soldado', 'Soldador y estación de aire caliente', '#ffb454'),
+  ('Osciloscopio', 'Osciloscopio digital de 2 canales', '#4fbf8b')
+on conflict (name) do nothing;
+
+-- =====================================================================
+-- Sitio web público (editor de contenidos)
+-- El sitio lee lo publicado sin login; editar, publicar y subir fotos
+-- queda solo para docentes y admins con sesión iniciada.
+-- =====================================================================
+
+create table if not exists public.aero_draft (
+  id          text primary key,
+  content     jsonb not null default '{}'::jsonb,
+  revision    integer not null default 1,
+  updated_at  timestamptz not null default now()
+);
+
+create table if not exists public.aero_published (
+  id            text primary key,
+  content       jsonb not null default '{}'::jsonb,
+  version       integer not null default 0,
+  published_at  timestamptz
+);
+
+insert into public.aero_draft (id) values ('main') on conflict (id) do nothing;
+insert into public.aero_published (id) values ('main') on conflict (id) do nothing;
+
+-- Pueden editar el sitio: docentes y admins (is_docente() incluye a los admins)
+create or replace function public.can_edit_site() returns boolean
+language sql stable security definer set search_path = public as $$
+  select auth.uid() is not null and public.is_docente();
+$$;
+
+alter table public.aero_draft     enable row level security;
+alter table public.aero_published enable row level security;
+
+-- Sacar las políticas anteriores (las que permitían editar sin login)
+do $$
+declare r record;
+begin
+  for r in select policyname, tablename from pg_policies
+           where schemaname = 'public' and tablename in ('aero_draft', 'aero_published') loop
+    execute format('drop policy %I on public.%I', r.policyname, r.tablename);
+  end loop;
+end $$;
+
+-- Lo publicado lo lee cualquiera (es la web pública)
+create policy aero_published_read on public.aero_published for select to anon, authenticated using (true);
+
+-- El borrador solo lo ven y lo editan docentes y admins
+create policy aero_draft_read   on public.aero_draft for select to authenticated using (public.can_edit_site());
+create policy aero_draft_insert on public.aero_draft for insert to authenticated with check (public.can_edit_site());
+create policy aero_draft_update on public.aero_draft for update to authenticated
+  using (public.can_edit_site()) with check (public.can_edit_site());
+
+-- Publicar: copia el borrador a la versión pública y suma una versión
+drop function if exists public.aero_publish();
+create function public.aero_publish() returns integer
+language plpgsql security definer set search_path = public as $$
+declare
+  v integer;
+begin
+  if not public.can_edit_site() then
+    raise exception 'Solo docentes y admins pueden publicar el sitio';
+  end if;
+  insert into aero_published (id, content, version, published_at)
+  select 'main', d.content, 1, now() from aero_draft d where d.id = 'main'
+  on conflict (id) do update
+    set content = excluded.content,
+        version = aero_published.version + 1,
+        published_at = now()
+  returning version into v;
+  if v is null then
+    raise exception 'No hay borrador para publicar';
+  end if;
+  return v;
+end $$;
+
+revoke execute on function public.aero_publish() from public, anon;
+grant execute on function public.aero_publish() to authenticated;
+
+-- Fotos del sitio: bucket público (la web las muestra sin login), pero solo docentes y admins suben o borran
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('aero-media', 'aero-media', true, 5242880)  -- 5 MB por foto
+on conflict (id) do nothing;
+
+do $$
+declare r record;
+begin
+  for r in select policyname from pg_policies
+           where schemaname = 'storage' and tablename = 'objects'
+             and (coalesce(qual, '') || coalesce(with_check, '')) like '%aero-media%' loop
+    execute format('drop policy %I on storage.objects', r.policyname);
+  end loop;
+end $$;
+
+create policy aero_media_insert on storage.objects for insert to authenticated
+  with check (bucket_id = 'aero-media' and public.can_edit_site());
+create policy aero_media_update on storage.objects for update to authenticated
+  using (bucket_id = 'aero-media' and public.can_edit_site())
+  with check (bucket_id = 'aero-media' and public.can_edit_site());
+create policy aero_media_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'aero-media' and public.can_edit_site());

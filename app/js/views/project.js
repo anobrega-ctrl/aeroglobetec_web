@@ -1,8 +1,10 @@
 import { esc, isStaff, openForm, field, colorPicker, confirmAction, toast, errorMessage } from '../ui.js';
 import { renderSummary } from './tabs/summary.js';
+import { renderPresentation } from './tabs/presentation.js';
 import { renderTasks } from './tabs/tasks.js';
 import { renderUpdates } from './tabs/updates.js';
 import { renderMilestones } from './tabs/milestones.js';
+import { renderEnsayos } from './tabs/ensayos.js';
 import { renderTeam } from './tabs/team.js';
 import { renderFiles } from './tabs/files.js';
 import { renderInventory } from './tabs/inventory.js';
@@ -11,9 +13,11 @@ import { renderActivity } from './tabs/activity.js';
 
 const TABS = [
   ['resumen', 'Resumen', renderSummary],
+  ['presentacion', 'Presentación', renderPresentation],
   ['tareas', 'Tareas', renderTasks],
   ['avances', 'Avances', renderUpdates],
   ['hitos', 'Hitos', renderMilestones],
+  ['ensayos', 'Ensayos y fallas', renderEnsayos],
   ['equipo', 'Equipo y áreas', renderTeam],
   ['archivos', 'Archivos', renderFiles],
   ['inventario', 'Inventario', renderInventory],
@@ -43,6 +47,7 @@ export async function renderProject(el, ctx) {
         </div>
         <div class="head-actions">
           <a class="btn ghost" href="#/proyecto/${id}/informe">Informe PDF</a>
+          <button class="btn ghost" id="export-xlsx" title="Descargar tareas, avances, ensayos e inventario${staff ? ' con el rendimiento' : ''}">Excel</button>
           ${staff ? `
           <div class="dropdown">
             <button class="btn ghost" data-more aria-haspopup="true">Opciones ▾</button>
@@ -61,6 +66,18 @@ export async function renderProject(el, ctx) {
     </div>`;
 
   el.querySelector('.tabs a.active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+
+  el.querySelector('#export-xlsx').addEventListener('click', async (ev) => {
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    btn.textContent = 'Generando…';
+    try {
+      const { exportProjectToExcel } = await import('../export.js');
+      await exportProjectToExcel(api, project, { staff });
+      toast('Excel descargado');
+    } catch (e) { toast(errorMessage(e), 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Excel'; }
+  });
 
   const more = el.querySelector('[data-more]');
   if (more) {

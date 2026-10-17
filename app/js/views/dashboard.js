@@ -1,4 +1,4 @@
-import { esc, name, isStaff, dueLabel, daysUntil, fmtDate, openForm, field, colorPicker, toast, errorMessage, emptyState, COLORS } from '../ui.js';
+import { esc, name, icon, isStaff, dueLabel, daysUntil, fmtDate, openForm, field, colorPicker, toast, errorMessage, emptyState, COLORS } from '../ui.js';
 
 export async function renderDashboard(el, { api, me }) {
   const staff = isStaff(me);
@@ -13,10 +13,10 @@ export async function renderDashboard(el, { api, me }) {
     <div class="page">
       <section class="hello">
         <div>
-          <p class="eyebrow">Inicio</p>
           <h1>Hola, ${esc(firstName)}</h1>
+          <p>${esc(today())}</p>
         </div>
-        ${staff ? '<button class="btn primary" id="new-project">+ Nuevo proyecto</button>' : ''}
+        ${staff ? `<button class="btn primary" id="new-project">${icon('plus')} Nuevo proyecto</button>` : ''}
       </section>
 
       <div class="dash-grid">
@@ -75,6 +75,11 @@ export async function renderDashboard(el, { api, me }) {
       location.hash = `#/proyecto/${p.id}/equipo`;
     } catch (e) { toast(errorMessage(e), 'error'); }
   });
+}
+
+function today() {
+  const s = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function card(p) {
