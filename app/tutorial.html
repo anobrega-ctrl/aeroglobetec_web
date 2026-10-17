@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#0c1526"/>
+<title>Recorrido por la plataforma · AeroGlobETec</title>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+  :root{--bg:#0c1526;--panel:#111c31;--line:#1d2940;--text:#e8edf5;--muted:#aab5c6;--accent:#4f8fe0;--font:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font)}
+  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 28px}
+  .wrap{width:100%;max-width:1180px}
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:14px}
+  header img{width:32px;height:32px;border-radius:7px}
+  header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em}
+  header p{margin:2px 0 0;color:var(--muted);font-size:13.5px}
+  header .grow{flex:1;min-width:200px}
+  a.btn,button.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:500 13.5px var(--font);text-decoration:none;cursor:pointer}
+  a.btn:hover,button.btn:hover{border-color:#2c3c5a;background:#16223a}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:#3f7dcc}
+
+  /* Pantalla: la plataforma real a 1280×760, escalada para que entre */
+  .screen{position:relative;width:100%;aspect-ratio:1280/760;border-radius:12px;overflow:hidden;background:#f4f5f7;box-shadow:0 18px 50px rgba(0,0,0,.45),0 0 0 1px var(--line)}
+  .stage{position:absolute;left:0;top:0;width:1280px;height:760px;transform-origin:0 0}
+  .stage iframe{position:absolute;inset:0;width:1280px;height:760px;border:0;background:#f4f5f7}
+  .overlay{position:absolute;inset:0;overflow:hidden;cursor:default}
+  .spot{position:absolute;border:2.5px solid var(--accent);border-radius:9px;box-shadow:0 0 0 9999px rgba(10,18,32,.32),0 0 0 6px rgba(79,143,224,.22);opacity:0;pointer-events:none;transition:left .45s ease,top .45s ease,width .45s ease,height .45s ease,opacity .3s}
+  .spot.on{opacity:1}
+  .cursor{position:absolute;left:0;top:0;width:30px;height:30px;pointer-events:none;transition-property:transform;transition-timing-function:cubic-bezier(.45,.05,.25,1);z-index:3;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+  .cursor svg{width:30px;height:30px;transition:transform .12s}
+  .cursor.press svg{transform:scale(.82)}
+  .ripple{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:3px solid var(--accent);background:rgba(79,143,224,.25);pointer-events:none;animation:ripple .6s ease-out forwards;z-index:2}
+  @keyframes ripple{from{transform:scale(.2);opacity:1}to{transform:scale(1.5);opacity:0}}
+
+  /* Subtítulos tipo video */
+  .player{position:relative}
+  .caption{position:absolute;left:50%;bottom:4.5%;transform:translateX(-50%);width:max-content;max-width:min(88%,860px);background:rgba(8,12,22,.86);color:#fff;border-radius:8px;padding:10px 16px;font-size:clamp(13px,1.75vw,19px);line-height:1.4;text-align:center;opacity:0;transition:opacity .25s;pointer-events:none}
+  .caption.on{opacity:1}
+  .caption b{color:#9cc4f5}
+  .chapter-tag{position:absolute;left:14px;top:12px;background:rgba(8,12,22,.8);color:#fff;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;opacity:0;transition:opacity .25s}
+  .chapter-tag.on{opacity:1}
+  .start{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,14,26,.55);border:0;cursor:pointer;color:#fff;font:600 17px var(--font)}
+  .start span{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .start i{width:76px;height:76px;border-radius:50%;background:var(--accent);display:grid;place-items:center;box-shadow:0 8px 30px rgba(0,0,0,.4);transition:transform .15s}
+  .start:hover i{transform:scale(1.07)}
+  .start[hidden]{display:none}
+
+  /* Controles */
+  .controls{display:flex;align-items:center;gap:8px;margin-top:12px}
+  .controls button{width:38px;height:38px;flex:none;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;display:grid;place-items:center}
+  .controls button:hover{background:#16223a}
+  .controls button.speed{width:auto;padding:0 10px;font:600 13px var(--font)}
+  .controls svg{width:18px;height:18px}
+  .bar{flex:1;display:flex;gap:3px;height:38px;align-items:center;min-width:0}
+  .bar button{flex:1;height:6px;min-width:3px;padding:0;border:0;border-radius:3px;background:#24324d;width:auto;cursor:pointer}
+  .bar button:hover{background:#34476b}
+  .bar button.done{background:#3a6fb5}
+  .bar button.now{background:var(--accent);height:10px}
+  .count{color:var(--muted);font-size:13px;min-width:54px;text-align:right;font-variant-numeric:tabular-nums}
+  .chapters{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chapters button{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:500 13px var(--font);cursor:pointer}
+  .chapters button:hover{color:var(--text);border-color:#2c3c5a}
+  .chapters button.now{background:var(--accent);border-color:var(--accent);color:#fff}
+  .note{color:var(--muted);font-size:12.5px;margin-top:12px}
+  @media(max-width:640px){
+    .controls{gap:6px}.controls .speed,.count{display:none}
+    .bar{gap:1px}.bar button{min-width:0;border-radius:1px}
+    header .btn span{display:none}
+    .caption{position:static;transform:none;width:auto;max-width:none;margin-top:10px;font-size:14.5px;min-height:3.2em;display:block}
+    .chapter-tag{font-size:11px;padding:3px 8px;left:8px;top:8px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="icons/icon-192.png" alt=""/>
+    <div class="grow">
+      <h1>Recorrido por la plataforma</h1>
+      <p>Todo el panel en unos minutos. Los datos son de ejemplo.</p>
+    </div>
+    <a class="btn" href="index.html?demo" target="_blank" rel="noopener">Probarla vos <span>(modo demo)</span></a>
+    <a class="btn primary" href="./">Ir a la plataforma</a>
+  </header>
+
+  <div class="player">
+  <div class="screen" id="screen">
+    <div class="stage" id="stage">
+      <iframe id="frame" title="Plataforma en modo demo" src="index.html?demo&amp;tour#/" tabindex="-1"></iframe>
+      <div class="overlay" id="overlay">
+        <div class="spot" id="spot"></div>
+        <div class="cursor" id="cursor"><svg viewBox="0 0 24 24"><path d="M4 2.5v17.2l4.6-4.4 2.9 6.6 3-1.3-2.9-6.5h6.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div class="chapter-tag" id="chapter-tag"></div>
+    <button class="start" id="start" aria-label="Empezar el recorrido"><span><i><svg width="30" height="30" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#fff"/></svg></i>Empezar el recorrido</span></button>
+  </div>
+  <div class="caption" id="caption" aria-live="polite"></div>
+  </div>
+
+  <div class="controls">
+    <button id="prev" aria-label="Paso anterior" title="Anterior (←)"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button id="play" aria-label="Reproducir" title="Reproducir / pausar (espacio)"></button>
+    <button id="next" aria-label="Paso siguiente" title="Siguiente (→)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="bar" id="bar"></div>
+    <span class="count" id="count"></span>
+    <button class="speed" id="speed" title="Velocidad">1×</button>
+  </div>
+  <div class="chapters" id="chapters"></div>
+  <p class="note">Teclas: espacio para pausar, ← y → para moverte. Lo que hagas en «Probarla vos» queda solo en tu navegador.</p>
+</div>
+
+<script>
+(() => {
+  // Cada paso: cap = capítulo, at = elemento a señalar (selector, o "selector|texto" para elegir por texto),
+  // click = lo toca, say = subtítulo. Todo pasa sobre la plataforma real en modo demo.
+  const S = [
+    { cap: 'Inicio', at: '.brand', say: 'Esta es la <b>plataforma del taller</b>. Vamos a recorrerla de punta a punta.' },
+    { cap: 'Inicio', at: '.side-nav', say: 'A la izquierda está el <b>menú</b>. Docentes y líderes ven además <b>Usuarios</b> y <b>Sitio web</b>.' },
+    { cap: 'Inicio', at: '#side-projects', say: 'Abajo aparecen <b>tus proyectos</b>, para entrar directo.' },
+    { cap: 'Inicio', at: 'section.panel|Mis tareas', say: 'En <b>Inicio</b> están tus tareas pendientes, ordenadas por fecha de entrega.' },
+    { cap: 'Inicio', at: 'section.panel|Para revisar', say: 'Los docentes y líderes ven acá los <b>avances que esperan revisión</b>.' },
+    { cap: 'Inicio', at: 'section.panel|Charlas y competencias', say: 'También las <b>próximas charlas y competencias</b>, con los días que faltan.' },
+    { cap: 'Inicio', at: 'section.panel|Próximos hitos', say: 'Y los <b>hitos</b> que se vienen en cada proyecto.' },
+    { cap: 'Inicio', at: '#new-project', say: 'Con <b>Nuevo proyecto</b> se crea un proyecto y se arma su equipo.' },
+
+    { cap: 'Proyectos', at: '#side-projects a', click: true, say: 'Entremos a un <b>proyecto</b>.' },
+    { cap: 'Proyectos', at: '#view nav.tabs', say: 'Cada proyecto tiene sus <b>secciones</b>. Las vemos una por una.' },
+    { cap: 'Proyectos', at: '.head-actions', say: 'Arriba podés sacar el <b>informe en PDF</b> o bajar todo a <b>Excel</b>.' },
+    { cap: 'Proyectos', at: '#view a[href$="/presentacion"]', click: true, say: '<b>Presentación</b>: la explicación del proyecto, con imágenes y videos, lista para mostrar.' },
+    { cap: 'Proyectos', at: '#view a[href$="/tareas"]', click: true, say: '<b>Tareas</b>: un tablero con columnas. Cada tarea tiene área, prioridad, responsable y fecha.' },
+    { cap: 'Proyectos', at: '#board', say: 'Las tareas se mueven de <b>Pendiente</b> a <b>Hecha</b> a medida que avanzan.' },
+    { cap: 'Proyectos', at: '#new-task', click: true, say: 'Con <b>Nueva tarea</b> se carga una tarea nueva…' },
+    { cap: 'Proyectos', at: 'dialog[open] .modal-body', say: '…con título, detalle, responsable y fecha. En los comentarios podés <b>mencionar</b> a alguien con @.' },
+    { cap: 'Proyectos', at: 'dialog[open] footer [data-close]', click: true, say: 'La cerramos sin guardar.' },
+    { cap: 'Proyectos', at: '#view a[href$="/avances"]', click: true, say: '<b>Avances</b>: cada uno cuenta lo que hizo, con fotos o archivos. Un docente o líder lo revisa.' },
+    { cap: 'Proyectos', at: '#view a[href$="/hitos"]', click: true, say: '<b>Hitos</b>: las metas grandes del proyecto y para cuándo.' },
+    { cap: 'Proyectos', at: '#view a[href$="/ensayos"]', click: true, say: '<b>Ensayos y fallas</b>: las pruebas que se hicieron, cómo salieron y qué falló.' },
+    { cap: 'Proyectos', at: '#view a[href$="/equipo"]', click: true, say: '<b>Equipo y áreas</b>: quién está en el proyecto y en qué área trabaja.' },
+    { cap: 'Proyectos', at: '#view a[href$="/archivos"]', click: true, say: '<b>Archivos</b>: planos, código, fotos y documentos del proyecto.' },
+    { cap: 'Proyectos', at: '#view a[href$="/inventario"]', click: true, say: '<b>Inventario</b>: materiales y componentes, qué hay y qué falta comprar.' },
+    { cap: 'Proyectos', at: '#view a[href$="/rendimiento"]', click: true, say: '<b>Rendimiento</b>: lo que aportó cada estudiante y cada área. Lo ven docentes y líderes.' },
+    { cap: 'Proyectos', at: '#view a[href$="/bitacora"]', click: true, say: '<b>Bitácora</b>: todo lo que pasó en el proyecto, en orden.' },
+
+    { cap: 'Turnos', at: 'a[data-nav="turnos"]', click: true, say: '<b>Turnos</b>: qué equipo usa cada máquina o herramienta, y cuándo.' },
+    { cap: 'Turnos', at: '.week-nav', say: 'Se ve <b>la semana</b> y se pasa de una a otra con las flechas.' },
+    { cap: 'Turnos', at: '#new-res', say: 'Con <b>Reservar</b> pedís un equipo para tu proyecto en un día y horario.' },
+    { cap: 'Turnos', at: '#manage', say: 'En <b>Equipos</b> los docentes cargan las máquinas y herramientas que se pueden reservar.' },
+
+    { cap: 'Charlas y competencias', at: 'a[data-nav="eventos"]', click: true, say: '<b>Charlas y competencias</b>: todo lo que viene, quién va y qué se presenta.' },
+    { cap: 'Charlas y competencias', at: '#new-event', say: 'Docentes y líderes cargan cada <b>charla o competencia</b> con su fecha y lugar.' },
+    { cap: 'Charlas y competencias', at: '.event-row|CATE', click: true, say: 'Entremos al <b>CATE 2027</b>.' },
+    { cap: 'Charlas y competencias', at: '#view a[href$="/materiales"]', click: true, say: '<b>Materiales</b>: presentaciones, enlaces de Canva o Google Slides, infografías y PDF, que se ven ahí mismo.' },
+    { cap: 'Charlas y competencias', at: '#view a[href$="/preparacion"]', click: true, say: '<b>Preparación</b>: la lista de cosas para tener listas antes del evento, con responsables.' },
+    { cap: 'Charlas y competencias', at: '#view a[href$="/equipo"]', click: true, say: '<b>Equipo y proyectos</b>: quiénes van y qué proyectos se presentan.' },
+
+    { cap: 'Usuarios', at: 'a[data-nav="users"]', click: true, say: '<b>Usuarios</b>: todos los que entraron a la plataforma.' },
+    { cap: 'Usuarios', at: '#view table select', say: 'Acá se cambia el <b>rol</b> de cada uno: estudiante, estudiante líder o docente.' },
+
+    { cap: 'Sitio web', at: 'a[data-nav="sitio"]', click: true, say: '<b>Sitio web</b>: desde acá se edita la página pública del taller.' },
+    { cap: 'Sitio web', at: '.site-tabs a|Contenido', say: 'En <b>Contenido</b> se cambian textos, fotos y apartados. Se ve en la web al tocar <b>Publicar</b>.' },
+    { cap: 'Sitio web', at: '.site-tabs a|Docentes', click: true, say: 'En <b>Docentes</b> se cargan los profes que aparecen en la web…' },
+    { cap: 'Sitio web', at: '#add-teacher', say: '…con su foto, mail y teléfono. Los cambios se ven <b>al instante</b>.' },
+
+    { cap: 'Tu cuenta', at: '.bell', say: 'En <b>Notificaciones</b> te avisa si te asignan una tarea, te mencionan o revisan tu avance.' },
+    { cap: 'Tu cuenta', at: '.user-btn', click: true, say: 'Tocando tu nombre…' },
+    { cap: 'Tu cuenta', at: '#usermenu .menu', say: '…podés <b>instalarla como app</b> en el celu o la compu, cambiar tu nombre o cerrar sesión.' },
+    { cap: 'Tu cuenta', at: '.user-btn', click: true, say: '¡Listo! Ya conocés toda la plataforma. Entrá con tu mail de la ETec y empezá. 🚀', end: true },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const frame = $('frame'), stage = $('stage'), screen = $('screen'), overlay = $('overlay');
+  const spot = $('spot'), cursor = $('cursor'), caption = $('caption'), tag = $('chapter-tag');
+  const W = 1280, H = 760;
+  let idx = 0, playing = false, run = 0, speed = 1, pos = { x: 640, y: 380 }, ready;
+
+  const PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+  const PAUSE = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>';
+
+  // Escala la pantalla de 1280×760 al ancho disponible
+  const fit = () => { stage.style.transform = `scale(${screen.clientWidth / W})`; };
+  new ResizeObserver(fit).observe(screen); fit();
+
+  // Barra de progreso y capítulos
+  const chapters = [...new Set(S.map(s => s.cap))];
+  $('bar').innerHTML = S.map((s, i) => `<button data-i="${i}" title="${s.cap} · paso ${i + 1}" aria-label="Ir al paso ${i + 1}"></button>`).join('');
+  $('chapters').innerHTML = chapters.map(c => `<button data-c="${c}">${c}</button>`).join('');
+
+  class Stop extends Error {}
+  const sleep = (ms, id) => new Promise((ok, no) => setTimeout(() => (id === run ? ok() : no(new Stop())), ms / speed));
+  const doc = () => frame.contentDocument;
+
+  ready = new Promise((ok) => frame.addEventListener('load', () => {
+    // Sin la barra amarilla del modo demo, para que se vea como la plataforma de verdad
+    const st = doc().createElement('style');
+    st.textContent = '.demo-bar{display:none!important}.demo-bar~.shell-layout .sidebar,.demo-bar~.shell-layout .site-editor{height:100vh!important}';
+    doc().head.append(st);
+    ok();
+  }));
+
+  function find(spec) {
+    const [sel, text] = spec.split('|');
+    const list = [...doc().querySelectorAll(sel)];
+    const el = text ? list.find(e => e.textContent.includes(text)) : list[0];
+    return el && el.getClientRects().length ? el : null;
+  }
+  async function waitFor(spec, id) {
+    for (let t = 0; t < 60; t++) {
+      const el = find(spec);
+      if (el) return el;
+      await sleep(100 * speed, id);
+    }
+    return null;
+  }
+
+  function moveTo(x, y, id) {
+    const d = Math.hypot(x - pos.x, y - pos.y);
+    const ms = Math.min(1100, Math.max(350, d * 1.1)) / speed;
+    cursor.style.transitionDuration = ms + 'ms';
+    cursor.style.transform = `translate(${x - 4}px,${y - 2}px)`;
+    pos = { x, y };
+    return sleep(ms * speed + 80, id);
+  }
+  function highlight(r) {
+    if (!r) { spot.classList.remove('on'); return; }
+    const p = 6;
+    Object.assign(spot.style, { left: r.left - p + 'px', top: r.top - p + 'px', width: r.width + p * 2 + 'px', height: r.height + p * 2 + 'px' });
+    spot.classList.add('on');
+  }
+  async function clickAt(x, y, id) {
+    cursor.classList.add('press');
+    const rp = document.createElement('div');
+    rp.className = 'ripple'; rp.style.left = x + 'px'; rp.style.top = y + 'px';
+    overlay.append(rp); setTimeout(() => rp.remove(), 700);
+    await sleep(140, id);
+    cursor.classList.remove('press');
+  }
+
+  function paint() {
+    const s = S[idx];
+    [...$('bar').children].forEach((b, i) => { b.className = i < idx ? 'done' : i === idx ? 'now' : ''; });
+    [...$('chapters').children].forEach(b => b.classList.toggle('now', b.dataset.c === s.cap));
+    $('count').textContent = `${idx + 1} / ${S.length}`;
+    $('play').innerHTML = playing ? PAUSE : PLAY;
+    $('play').setAttribute('aria-label', playing ? 'Pausar' : 'Reproducir');
+    tag.textContent = s.cap; tag.classList.add('on');
+  }
+
+  // Lleva la plataforma al estado justo antes del paso i (repitiendo los clics de navegación)
+  async function prepare(i, id) {
+    const win = frame.contentWindow;
+    doc().querySelectorAll('dialog[open]').forEach(d => d.close());
+    doc().querySelectorAll('.dropdown .menu').forEach(m => { m.hidden = true; });
+    // Solo se navega cuando el enlace que sigue no está en pantalla (así saltar de capítulo es rápido)
+    let hash = '#/';
+    for (let k = 0; k < i; k++) {
+      const s = S[k];
+      if (!s.click || /dialog|user-btn/.test(s.at)) continue;
+      let el = find(s.at);
+      if (!el) { win.location.hash = hash; el = await waitFor(s.at, id); }
+      const href = el?.getAttribute('href');
+      if (href?.startsWith('#')) hash = href;
+    }
+    if (win.location.hash !== hash) win.location.hash = hash;
+    if (S[i].at) await waitFor(S[i].at.startsWith('dialog') || S[i].at.startsWith('#usermenu') ? '#view h1' : S[i].at, id);
+    if (/dialog\[open\]/.test(S[i].at)) {               // el formulario de tarea tiene que estar abierto
+      (await waitFor('#new-task', id))?.click(); await sleep(300 * speed, id);
+    }
+    if (S[i].at === '#usermenu .menu' || (S[i].end)) { // el menú de la cuenta abierto
+      if (S[i].at === '#usermenu .menu' || S[i - 1]?.at === '#usermenu .menu') (await waitFor('.user-btn', id))?.click();
+      await sleep(200 * speed, id);
+    }
+  }
+
+  async function step(id) {
+    const s = S[idx];
+    paint();
+    caption.classList.remove('on');
+    const el = s.at ? await waitFor(s.at, id) : null;
+    if (el) {
+      el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      await sleep(150, id);
+      const r = el.getBoundingClientRect();
+      const x = Math.min(W - 20, r.left + Math.min(r.width / 2, 120)), y = r.top + Math.min(r.height / 2, 40);
+      highlight(r);
+      caption.innerHTML = s.say; caption.classList.add('on');
+      await moveTo(x, y, id);
+      if (s.click) { await sleep(450, id); await clickAt(x, y, id); el.click(); highlight(null); await sleep(500, id); }
+    } else {
+      highlight(null);
+      caption.innerHTML = s.say; caption.classList.add('on');
+    }
+    const plain = s.say.replace(/<[^>]+>/g, '');
+    await sleep(Math.min(7500, Math.max(2600, plain.length * 52)), id);
+  }
+
+  async function go(i, { prep = true } = {}) {
+    const id = ++run;
+    idx = Math.max(0, Math.min(S.length - 1, i));
+    paint();
+    try {
+      await ready;
+      if (prep) await prepare(idx, id);
+      while (true) {
+        await step(id);
+        if (!playing) return;
+        if (S[idx].end || idx === S.length - 1) { playing = false; paint(); return; }
+        idx++;
+      }
+    } catch (e) { if (!(e instanceof Stop)) console.error(e); }
+  }
+
+  function play() {
+    $('start').hidden = true;
+    playing = true;
+    go(idx === S.length - 1 ? 0 : idx);
+  }
+  function pause() { playing = false; run++; paint(); }
+
+  $('start').addEventListener('click', play);
+  $('play').addEventListener('click', () => (playing ? pause() : play()));
+  $('next').addEventListener('click', () => { $('start').hidden = true; go(idx + 1); });
+  $('prev').addEventListener('click', () => { $('start').hidden = true; go(idx - 1); });
+  $('bar').addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) { $('start').hidden = true; go(+b.dataset.i); } });
+  $('chapters').addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (b) { $('start').hidden = true; go(S.findIndex(s => s.cap === b.dataset.c)); } });
+  $('speed').addEventListener('click', () => { speed = speed === 1 ? 1.5 : speed === 1.5 ? 2 : 1; $('speed').textContent = speed + '×'; });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+    if (e.key === 'ArrowRight') $('next').click();
+    if (e.key === 'ArrowLeft') $('prev').click();
+  });
+  cursor.style.transform = `translate(${pos.x}px,${pos.y}px)`;
+  paint();
+})();
+</script>
+</body>
+</html>

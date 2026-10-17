@@ -1,4 +1,4 @@
-import { esc, ROLE_LABEL, errorMessage } from '../ui.js?v=202610171852';
+import { esc, ROLE_LABEL, errorMessage } from '../ui.js?v=202610172024';
 
 export async function renderLogin(el, { api, notice = '' }) {
   // Errores al volver del link del mail o de Google (dominio no permitido, link vencido, etc.)
@@ -34,6 +34,7 @@ export async function renderLogin(el, { api, notice = '' }) {
             </label>
             <button class="btn ghost" type="submit">Entrar con el código</button>
           </form>`}
+        <a class="muted back" href="tutorial.html">Ver un recorrido por la plataforma</a>
         <a class="muted back" href="../">Ir a la web del taller</a>
       </div>
     </main>`;

@@ -1,15 +1,15 @@
-import { esc, isStaff, openForm, field, colorPicker, confirmAction, toast, errorMessage } from '../ui.js?v=202610171852';
-import { renderSummary } from './tabs/summary.js?v=202610171852';
-import { renderPresentation } from './tabs/presentation.js?v=202610171852';
-import { renderTasks } from './tabs/tasks.js?v=202610171852';
-import { renderUpdates } from './tabs/updates.js?v=202610171852';
-import { renderMilestones } from './tabs/milestones.js?v=202610171852';
-import { renderEnsayos } from './tabs/ensayos.js?v=202610171852';
-import { renderTeam } from './tabs/team.js?v=202610171852';
-import { renderFiles } from './tabs/files.js?v=202610171852';
-import { renderInventory } from './tabs/inventory.js?v=202610171852';
-import { renderPerformance } from './tabs/performance.js?v=202610171852';
-import { renderActivity } from './tabs/activity.js?v=202610171852';
+import { esc, isStaff, openForm, field, colorPicker, confirmAction, toast, errorMessage } from '../ui.js?v=202610172024';
+import { renderSummary } from './tabs/summary.js?v=202610172024';
+import { renderPresentation } from './tabs/presentation.js?v=202610172024';
+import { renderTasks } from './tabs/tasks.js?v=202610172024';
+import { renderUpdates } from './tabs/updates.js?v=202610172024';
+import { renderMilestones } from './tabs/milestones.js?v=202610172024';
+import { renderEnsayos } from './tabs/ensayos.js?v=202610172024';
+import { renderTeam } from './tabs/team.js?v=202610172024';
+import { renderFiles } from './tabs/files.js?v=202610172024';
+import { renderInventory } from './tabs/inventory.js?v=202610172024';
+import { renderPerformance } from './tabs/performance.js?v=202610172024';
+import { renderActivity } from './tabs/activity.js?v=202610172024';
 
 const TABS = [
   ['resumen', 'Resumen', renderSummary],
@@ -72,7 +72,7 @@ export async function renderProject(el, ctx) {
     btn.disabled = true;
     btn.textContent = 'Generando…';
     try {
-      const { exportProjectToExcel } = await import('../export.js?v=202610171852');
+      const { exportProjectToExcel } = await import('../export.js?v=202610172024');
       await exportProjectToExcel(api, project, { staff });
       toast('Excel descargado');
     } catch (e) { toast(errorMessage(e), 'error'); }
