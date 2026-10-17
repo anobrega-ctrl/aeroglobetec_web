@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#050b1b"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AeroGlobETec"/>
+<title>Plataforma AeroGlobETec</title>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"/>
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/app.css"/>
+</head>
+<body>
+<div id="app"><div class="loading full">Cargando…</div></div>
+<noscript>Esta plataforma necesita JavaScript activado.</noscript>
+<script type="module" src="js/main.js"></script>
+<script>
+  // App instalable: el navegador avisa que se puede instalar apenas carga la página,
+  // a veces antes que la app. Se guarda el aviso acá para que main.js lo use después.
+  window.addEventListener('beforeinstallprompt', (ev) => {
+    ev.preventDefault();
+    window.__installPrompt = ev;
+    window.dispatchEvent(new Event('install-ready'));
+  });
+  // Service worker (solo funciona en https o localhost)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>
