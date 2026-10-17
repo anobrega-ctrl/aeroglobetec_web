@@ -1,4 +1,4 @@
-import { esc, name, avatar, icon, mentionInput, withMentions, UPDATE_STATUS, options, field, openForm, confirmAction, toast, errorMessage, fmtDateTime, timeAgo, fileSize, emptyState } from '../../ui.js?v=202610171852';
+import { esc, name, avatar, icon, mentionInput, withMentions, UPDATE_STATUS, options, field, openForm, confirmAction, toast, errorMessage, fmtDateTime, timeAgo, fileSize, emptyState } from '../../ui.js?v=202610172024';
 
 const commentsLabel = (n) => (n ? `${n} comentario${n === 1 ? '' : 's'}` : 'Comentar');
 

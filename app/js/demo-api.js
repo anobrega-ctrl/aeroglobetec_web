@@ -2,7 +2,9 @@
 // Sirve para probar la interfaz sin login. Repite las reglas principales de permisos
 // de supabase/schema.sql, pero la seguridad real está solo en la base de datos.
 
-const KEY = 'age-demo-v5';
+// El recorrido animado (tutorial.html) usa su propia copia, siempre recién creada
+const TOUR = new URLSearchParams(location.search).has('tour');
+const KEY = TOUR ? 'age-tour' : 'age-demo-v5';
 
 // Presentación de ejemplo (la misma que supabase/presentacion_dron_rover.sql)
 const ROVER_MD = `# Dron Rover · CATE 2027
@@ -220,6 +222,7 @@ function demoExtras(P, { mec, ele }, { doc, lider, tomas, sofia, mateo }) {
 
 let db = load();
 function load() {
+  if (TOUR) return seed();
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s?.profiles) return s; } catch { /* sin datos guardados */ }
   return seed();
 }

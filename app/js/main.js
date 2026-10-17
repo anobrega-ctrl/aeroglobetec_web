@@ -1,17 +1,17 @@
 // Punto de entrada: elige la API (Supabase o demo), controla la sesión y el ruteo por hash.
-import { DEMO_MODE } from './config.js?v=202610171852';
-import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610171852';
-import { renderLogin } from './views/login.js?v=202610171852';
-import { renderDashboard } from './views/dashboard.js?v=202610171852';
-import { renderProject } from './views/project.js?v=202610171852';
-import { renderUsers } from './views/users.js?v=202610171852';
-import { renderReport } from './views/report.js?v=202610171852';
-import { renderTurnos } from './views/turnos.js?v=202610171852';
-import { renderSitio } from './views/sitio.js?v=202610171852';
-import { renderEventos } from './views/eventos.js?v=202610171852';
-import { renderEvento } from './views/evento.js?v=202610171852';
+import { DEMO_MODE } from './config.js?v=202610172024';
+import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610172024';
+import { renderLogin } from './views/login.js?v=202610172024';
+import { renderDashboard } from './views/dashboard.js?v=202610172024';
+import { renderProject } from './views/project.js?v=202610172024';
+import { renderUsers } from './views/users.js?v=202610172024';
+import { renderReport } from './views/report.js?v=202610172024';
+import { renderTurnos } from './views/turnos.js?v=202610172024';
+import { renderSitio } from './views/sitio.js?v=202610172024';
+import { renderEventos } from './views/eventos.js?v=202610172024';
+import { renderEvento } from './views/evento.js?v=202610172024';
 
-const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610171852') : await import('./api.js?v=202610171852');
+const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610172024') : await import('./api.js?v=202610172024');
 const app = document.getElementById('app');
 let me = null;
 
@@ -96,6 +96,7 @@ function renderShell() {
             <button class="side-btn user-btn" aria-haspopup="true">${avatar(me, 'xs')}<span class="user-name">${esc(name(me))}</span></button>
             <div class="menu up" hidden>
               <div class="menu-head"><strong>${esc(name(me))}</strong><small>${esc(me.email)}</small>${roleChip(me)}</div>
+              <button data-act="tour">${icon('play')} Recorrido por la plataforma</button>
               <button data-act="install" hidden>${icon('phone')} Instalar app</button>
               <button data-act="edit-name">${icon('edit')} Cambiar mi nombre</button>
               <button data-act="logout">${icon('logout')} Cerrar sesión</button>
@@ -138,6 +139,7 @@ function renderShell() {
     } catch (e) { toast(errorMessage(e), 'error'); }
   });
 
+  app.querySelector('[data-act="tour"]').addEventListener('click', () => { location.href = 'tutorial.html'; });
   app.querySelector('[data-act="install"]').addEventListener('click', async () => {
     if (!installPrompt) return installHelp();
     installPrompt.prompt();

@@ -1,4 +1,4 @@
-import { esc, name, ITEM_STATUS, options, field, openForm, confirmAction, toast, errorMessage, money, emptyState } from '../../ui.js?v=202610171852';
+import { esc, name, ITEM_STATUS, options, field, openForm, confirmAction, toast, errorMessage, money, emptyState } from '../../ui.js?v=202610172024';
 
 export async function renderInventory(el, ctx) {
   const { api, project, members, staff } = ctx;
