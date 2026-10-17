@@ -1,6 +1,9 @@
 // Service worker de la plataforma: guarda los archivos de la app para que abra rápido
 // y funcione como app instalada. Los datos (Supabase) nunca se guardan acá: siempre van a la red.
-const CACHE = 'age-app-v5';
+// La versión viene en la URL con que se registra (sw.js?v=...): cada publicación usa archivos nuevos
+// y así el proxy de la universidad no puede devolver copias viejas.
+const VERSION = new URL(self.location).searchParams.get('v') || 'dev';
+const CACHE = 'age-app-' + VERSION;
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/main.js', 'js/api.js', 'js/demo-api.js', 'js/ui.js', 'js/config.js', 'js/export.js',
@@ -15,7 +18,8 @@ const SHELL = [
 const CDN = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  const urls = SHELL.map(u => /\.(js|css)$/.test(u) ? `${u}?v=${VERSION}` : u);
+  event.waitUntil(caches.open(CACHE).then(c => c.addAll(urls)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {

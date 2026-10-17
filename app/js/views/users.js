@@ -1,4 +1,4 @@
-import { esc, name, avatar, ROLE_LABEL, roleChip, isStaff, canManageRoles, options, toast, errorMessage, fmtDate } from '../ui.js';
+import { esc, name, avatar, ROLE_LABEL, roleChip, isStaff, canManageRoles, options, toast, errorMessage, fmtDate } from '../ui.js?v=202610171852';
 
 export async function renderUsers(el, { api, me }) {
   if (!isStaff(me)) { location.hash = '#/'; return; }

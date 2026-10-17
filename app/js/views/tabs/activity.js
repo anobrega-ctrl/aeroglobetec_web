@@ -1,4 +1,4 @@
-import { esc, name, icon, fmtDate, emptyState, parseDate } from '../../ui.js';
+import { esc, name, icon, fmtDate, emptyState, parseDate } from '../../ui.js?v=202610171852';
 
 const KINDS = {
   tarea: ['check', 'Tareas'], avance: ['upload', 'Avances'], revision: ['edit', 'Revisiones'], hito: ['flag', 'Hitos'],
