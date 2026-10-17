@@ -550,3 +550,14 @@ p.pre{white-space:pre-wrap}
 .embed{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:var(--r);overflow:hidden}
 .embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .modal.wide:has(.embed){width:min(1000px,calc(100vw - 24px))}
+/* Trayectoria (Sitio web) */
+.tr-list .tr-thumb{width:64px;height:48px;flex:none;border-radius:6px;object-fit:cover;background:var(--subtle);border:1px solid var(--border);display:grid;place-items:center;color:var(--faint)}
+.tr-list .badge{margin-left:4px}
+.tr-list .badge svg{width:12px;height:12px;vertical-align:-1px}
+.tr-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.tr-photos label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);cursor:pointer}
+.tr-photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.tr-photos input{width:auto;height:auto;margin:0 5px 0 0;vertical-align:-2px}
+.tr-en{border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;margin:4px 0 12px}
+.tr-en summary{cursor:pointer;font-weight:600;font-size:13.5px}
+.tr-en[open] summary{margin-bottom:10px}

@@ -1,7 +1,7 @@
 // Capa de datos con Supabase. Todas las vistas hablan con la base a través de este módulo.
 // Los permisos reales los aplica la base de datos (ver supabase/schema.sql).
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610172024';
+import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610172052';
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, detectSessionInUrl: true, flowType: 'pkce' },
@@ -358,10 +358,27 @@ export const api = {
     check(await sb.from('site_teachers').delete().eq('id', id));
   },
   async uploadTeacherPhoto(file) {
+    return this.uploadSitePhoto(file, 'docentes');
+  },
+  // Fotos públicas de la web (bucket aero-media)
+  async uploadSitePhoto(file, folder) {
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const path = `docentes/${crypto.randomUUID()}.${ext}`;
+    const path = `${folder}/${crypto.randomUUID()}.${ext}`;
     check(await sb.storage.from('aero-media').upload(path, file, { contentType: file.type || undefined }));
     return sb.storage.from('aero-media').getPublicUrl(path).data.publicUrl;
+  },
+
+  // ---------- Trayectoria de la web pública ----------
+  async trayectoria() {
+    return check(await sb.from('site_trayectoria').select('*').order('starts_on', { ascending: false }));
+  },
+  async saveTrayectoria(t) {
+    const { id, ...fields } = t;
+    if (id) check(await sb.from('site_trayectoria').update(fields).eq('id', id));
+    else check(await sb.from('site_trayectoria').insert(fields));
+  },
+  async deleteTrayectoria(id) {
+    check(await sb.from('site_trayectoria').delete().eq('id', id));
   },
 
   // ---------- Charlas y competencias ----------
