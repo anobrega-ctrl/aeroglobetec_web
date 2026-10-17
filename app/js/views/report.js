@@ -1,12 +1,14 @@
 // Informe del proyecto para imprimir o guardar como PDF (usa la impresión del navegador).
 import { esc, name, isStaff, TASK_STATUS, UPDATE_STATUS, ITEM_STATUS, fmtDate, money } from '../ui.js';
+import { RESULT, SEVERITY, ISSUE_STATUS } from './tabs/ensayos.js';
 
 export async function renderReport(el, { api, me, params }) {
   const [id] = params;
   const staff = isStaff(me);
-  const [project, members, areas, tasks, updates, milestones, items, perf, areaPerf] = await Promise.all([
+  const [project, members, areas, tasks, updates, milestones, items, perf, areaPerf, tests, issues] = await Promise.all([
     api.project(id), api.members(id), api.areas(id), api.tasks(id), api.updates(id),
     api.milestones(id), api.inventory(id), api.studentPerformance(id), api.areaPerformance(id),
+    api.tests(id), api.issues(id),
   ]);
   if (!project) { location.hash = '#/'; return; }
   const who = (uid) => name(members.find(m => m.id === uid));
@@ -60,6 +62,16 @@ export async function renderReport(el, { api, me, params }) {
           ${u.body ? `<p>${esc(u.body)}</p>` : ''}
           ${u.feedback ? `<p class="fb"><b>Devolución:</b> ${esc(u.feedback)}</p>` : ''}
         </section>`).join('') || '<p>Sin avances.</p>'}
+
+      <h2>Ensayos</h2>
+      <table><thead><tr><th>Fecha</th><th>Ensayo</th><th>Resultado</th><th>Qué pasó</th></tr></thead><tbody>
+        ${tests.map(t => `<tr><td>${fmtDate(t.test_date)}</td><td>${esc(t.title)}</td><td>${RESULT[t.result]}</td><td>${esc(t.notes)}</td></tr>`).join('') || '<tr><td colspan="4">Sin ensayos</td></tr>'}
+      </tbody></table>
+
+      <h2>Fallas</h2>
+      <table><thead><tr><th>Falla</th><th>Gravedad</th><th>Estado</th><th>Resolución</th></tr></thead><tbody>
+        ${issues.map(i => `<tr><td>${esc(i.title)}</td><td>${SEVERITY[i.severity]}</td><td>${ISSUE_STATUS[i.status]}</td><td>${esc(i.resolution) || '—'}</td></tr>`).join('') || '<tr><td colspan="4">Sin fallas</td></tr>'}
+      </tbody></table>
 
       <h2>Inventario y presupuesto</h2>
       <table><thead><tr><th>Componente</th><th>Cant.</th><th>Subtotal</th><th>Estado</th></tr></thead><tbody>

@@ -241,8 +241,8 @@ export const api = {
   async comments(updateId) {
     return check(await sb.from('comments').select('*').eq('update_id', updateId).order('created_at'));
   },
-  async addComment(updateId, body) {
-    check(await sb.from('comments').insert({ update_id: updateId, body }));
+  async addComment(updateId, body, mentions = []) {
+    check(await sb.from('comments').insert({ update_id: updateId, body, mentions }));
   },
 
   // ---------- Archivos del proyecto ----------
@@ -291,5 +291,57 @@ export const api = {
   },
   async areaPerformance(projectId) {
     return check(await sb.rpc('area_performance', { p: projectId }));
+  },
+
+  // ---------- Ensayos y fallas ----------
+  async tests(projectId) {
+    return check(await sb.from('tests').select('*').eq('project_id', projectId).order('test_date', { ascending: false }).order('created_at', { ascending: false }));
+  },
+  async saveTest(t, files = [], keep = []) {
+    const { id, ...fields } = t;
+    const attachments = [...keep, ...(await this.uploadFiles(t.project_id, 'ensayos', files))];
+    if (id) { check(await sb.from('tests').update({ ...fields, attachments }).eq('id', id)); return id; }
+    return check(await sb.from('tests').insert({ ...fields, attachments }).select('id').single()).id;
+  },
+  async deleteTest(t) {
+    if (t.attachments?.length) await sb.storage.from(BUCKET).remove(t.attachments.map(a => a.path));
+    check(await sb.from('tests').delete().eq('id', t.id));
+  },
+  async issues(projectId) {
+    return check(await sb.from('issues').select('*').eq('project_id', projectId).order('created_at', { ascending: false }));
+  },
+  async saveIssue(i) {
+    const { id, ...fields } = i;
+    if (id) {
+      const r = check(await sb.from('issues').update(fields).eq('id', id).select('id'));
+      if (!r.length) throw new Error('No tenés permiso para modificar esta falla.');
+    } else check(await sb.from('issues').insert(fields));
+  },
+  async deleteIssue(id) {
+    check(await sb.from('issues').delete().eq('id', id));
+  },
+
+  // ---------- Equipos y turnos ----------
+  async equipment() {
+    return check(await sb.from('equipment').select('*').order('name'));
+  },
+  async saveEquipment(e) {
+    const { id, ...fields } = e;
+    if (id) check(await sb.from('equipment').update(fields).eq('id', id));
+    else check(await sb.from('equipment').insert(fields));
+  },
+  async agenda(from, to) {
+    return check(await sb.rpc('reservation_agenda', { desde: from.toISOString(), hasta: to.toISOString() }));
+  },
+  async saveReservation(r) {
+    const { id, ...fields } = r;
+    if (id) {
+      const res = check(await sb.from('reservations').update(fields).eq('id', id).select('id'));
+      if (!res.length) throw new Error('No tenés permiso para modificar este turno.');
+    } else check(await sb.from('reservations').insert(fields));
+  },
+  async deleteReservation(id) {
+    const res = check(await sb.from('reservations').delete().eq('id', id).select('id'));
+    if (!res.length) throw new Error('No tenés permiso para borrar este turno.');
   },
 };

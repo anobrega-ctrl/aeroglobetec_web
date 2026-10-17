@@ -10,9 +10,9 @@ export async function renderTasks(el, ctx) {
       <select id="f-area" aria-label="Filtrar por área">${options(areas.map(a => ({ value: a.id, label: a.name })), saved.area, { empty: 'Todas las áreas' })}</select>
       <select id="f-person" aria-label="Filtrar por persona">${options([{ value: 'me', label: 'Mis tareas' }, ...members.map(m => ({ value: m.id, label: name(m) }))], saved.person, { empty: 'Todas las personas' })}</select>
       <span class="grow"></span>
-      ${staff ? '<button class="btn primary" id="new-task">+ Nueva tarea</button>' : ''}
+      ${staff ? '<button class="btn primary" id="new-task">Nueva tarea</button>' : ''}
     </div>
-    ${!staff ? '<p class="hint">Arrastrá tus tareas para cambiar su estado. Cuando termines una, mandala a <b>En revisión</b>.</p>' : ''}
+    ${!staff ? '<p class="hint">Cuando termines una tarea, pasala a <b>En revisión</b>.</p>' : ''}
     <div class="kanban" id="board"></div>`;
 
   const board = el.querySelector('#board');

@@ -1,4 +1,4 @@
-import { esc, name, field, openForm, confirmAction, toast, errorMessage, fileSize, fmtDate, emptyState } from '../../ui.js';
+import { esc, name, icon, field, openForm, confirmAction, toast, errorMessage, fileSize, fmtDate, emptyState } from '../../ui.js';
 
 export async function renderFiles(el, ctx) {
   const { api, project, staff, me } = ctx;
@@ -6,14 +6,14 @@ export async function renderFiles(el, ctx) {
   const folders = [...new Set(files.map(f => f.folder))].sort();
 
   el.innerHTML = `<div class="tab-root">
-    <div class="toolbar"><p class="muted grow">CAD, código, fotos, documentación… todo lo del proyecto en un lugar.</p>
-      <button class="btn primary" id="upload">+ Subir archivos</button></div>
+    <div class="toolbar"><span class="grow"></span>
+      <button class="btn primary" id="upload">${icon('upload')} Subir archivos</button></div>
     ${files.length ? folders.map(folder => `
       <section class="panel">
-        <h2>📁 ${esc(folder)}</h2>
+        <h2>${icon('folder')}${esc(folder)}</h2>
         <ul class="files">${files.filter(f => f.folder === folder).map(f => `
           <li>
-            <button class="file-link grow" data-open="${f.id}">${icon(f.name)} ${esc(f.name)}</button>
+            <button class="file-link grow" data-open="${f.id}">${icon(fileIcon(f.name))}${esc(f.name)}</button>
             <small class="muted">${fileSize(f.size)} · ${esc(name(ctx.member(f.uploaded_by)))} · ${fmtDate(f.created_at)}</small>
             ${staff || f.uploaded_by === me.id ? `<button class="icon-btn" data-del="${f.id}" aria-label="Borrar archivo" title="Borrar">✕</button>` : ''}
           </li>`).join('')}</ul>
@@ -53,11 +53,10 @@ export async function renderFiles(el, ctx) {
   });
 }
 
-function icon(n) {
+function fileIcon(n) {
   const ext = n.split('.').pop().toLowerCase();
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) return '🖼️';
-  if (['step', 'stp', 'stl', 'f3d', 'dxf', 'obj', '3mf'].includes(ext)) return '🧊';
-  if (['ino', 'py', 'js', 'c', 'cpp', 'h', 'zip'].includes(ext)) return '💾';
-  if (['pdf', 'doc', 'docx', 'txt', 'md'].includes(ext)) return '📄';
-  return '📎';
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) return 'image';
+  if (['step', 'stp', 'stl', 'f3d', 'dxf', 'obj', '3mf'].includes(ext)) return 'cube';
+  if (['ino', 'py', 'js', 'c', 'cpp', 'h', 'zip'].includes(ext)) return 'code';
+  return 'file';
 }

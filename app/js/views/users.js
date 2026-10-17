@@ -12,18 +12,18 @@ export async function renderUsers(el, { api, me }) {
 
   el.innerHTML = `
     <div class="page">
-      <section class="hello"><div><p class="eyebrow">Administración</p><h1>Usuarios</h1></div></section>
+      <section class="hello"><div><h1>Usuarios</h1></div></section>
       <div class="stats">
         <div class="stat"><b>${count('docente')}</b><span>Docentes</span></div>
         <div class="stat"><b>${count('lider')}</b><span>Estudiantes líderes</span></div>
         <div class="stat"><b>${count('estudiante')}</b><span>Estudiantes</span></div>
       </div>
       <p class="hint">${me.is_admin
-        ? 'Como <b>admin</b> podés dar cualquier rol, incluso docente. Los admins se agregan solo desde el SQL Editor de Supabase (tabla <code>admins</code>).'
+        ? 'Como admin podés dar cualquier rol, incluso docente.'
         : canEdit
-          ? 'Los docentes se reconocen solos por el mail @etec.um.edu.ar. Acá podés convertir a un estudiante en <b>estudiante líder</b>: tiene los mismos permisos que un docente en los proyectos.'
+          ? 'Un estudiante líder tiene los mismos permisos que un docente dentro de los proyectos.'
           : 'Solo un docente o un admin puede cambiar roles.'}
-        Las personas aparecen después de entrar por primera vez.</p>
+        Cada persona aparece acá después de entrar por primera vez.</p>
       <div class="toolbar"><input type="search" id="q" class="search" placeholder="Buscar…" aria-label="Buscar usuario"/></div>
       <div class="table-wrap"><table class="table">
         <thead><tr><th>Persona</th><th>Mail</th><th>Rol</th><th>Alta</th></tr></thead>

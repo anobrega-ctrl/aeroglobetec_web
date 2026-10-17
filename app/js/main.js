@@ -1,11 +1,13 @@
 // Punto de entrada: elige la API (Supabase o demo), controla la sesión y el ruteo por hash.
 import { DEMO_MODE } from './config.js';
-import { esc, avatar, name, ROLE_LABEL, roleChip, isStaff, timeAgo, toast, errorMessage, openForm, field } from './ui.js';
+import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js';
 import { renderLogin } from './views/login.js';
 import { renderDashboard } from './views/dashboard.js';
 import { renderProject } from './views/project.js';
 import { renderUsers } from './views/users.js';
 import { renderReport } from './views/report.js';
+import { renderTurnos } from './views/turnos.js';
+import { renderSitio } from './views/sitio.js';
 
 const { api } = DEMO_MODE ? await import('./demo-api.js') : await import('./api.js');
 const app = document.getElementById('app');
@@ -16,6 +18,8 @@ const routes = [
   [/^#\/proyecto\/([\w-]+)\/informe$/, () => renderReport],
   [/^#\/proyecto\/([\w-]+)(?:\/(\w+))?$/, () => renderProject],
   [/^#\/usuarios$/, () => renderUsers],
+  [/^#\/turnos$/, () => renderTurnos],
+  [/^#\/sitio$/, () => renderSitio],
 ];
 
 async function boot() {
@@ -62,36 +66,41 @@ function renderShell() {
   const staff = isStaff(me);
   app.innerHTML = `
     ${api.demo ? demoBar() : ''}
-    <header class="topbar">
-      <div class="topbar-inner">
+    <div class="shell-layout">
+      <aside class="sidebar" aria-label="Menú">
         <a class="brand" href="#/">
-          <span class="brand-name">Aero<b>Glob</b>ETec</span>
-          <span class="brand-caption">Plataforma de proyectos</span>
+          <img src="icons/icon-192.png" alt="" width="30" height="30"/>
+          <span>AeroGlobETec</span>
         </a>
-        <nav class="topnav" aria-label="Principal">
-          <a href="#/" data-nav="home">Proyectos</a>
-          ${staff ? '<a href="#/usuarios" data-nav="users">Usuarios</a>' : ''}
+        <nav class="side-nav" aria-label="Principal">
+          <a href="#/" data-nav="home">${icon('home')}<span>Inicio</span></a>
+          <a href="#/turnos" data-nav="turnos">${icon('calendar')}<span>Turnos</span></a>
+          ${staff ? `<a href="#/usuarios" data-nav="users">${icon('users')}<span>Usuarios</span></a>` : ''}
+          ${canManageRoles(me) ? `<a href="#/sitio" data-nav="sitio">${icon('globe')}<span>Sitio web</span></a>` : ''}
         </nav>
-        <div class="top-actions">
+        <div class="side-projects">
+          <p class="side-label">Proyectos</p>
+          <div id="side-projects"></div>
+        </div>
+        <div class="side-foot">
           <div class="dropdown" id="notif">
-            <button class="icon-btn bell" aria-label="Notificaciones" aria-haspopup="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-              <span class="dot" hidden></span>
-            </button>
-            <div class="menu notif-menu" hidden></div>
+            <button class="side-btn bell" aria-label="Notificaciones" aria-haspopup="true">${icon('bell')}<span>Notificaciones</span><span class="dot" hidden></span></button>
+            <div class="menu notif-menu up" hidden></div>
           </div>
           <div class="dropdown" id="usermenu">
-            <button class="user-btn" aria-haspopup="true">${avatar(me, 'sm')}<span class="user-name">${esc(name(me))}</span></button>
-            <div class="menu" hidden>
+            <button class="side-btn user-btn" aria-haspopup="true">${avatar(me, 'xs')}<span class="user-name">${esc(name(me))}</span></button>
+            <div class="menu up" hidden>
               <div class="menu-head"><strong>${esc(name(me))}</strong><small>${esc(me.email)}</small>${roleChip(me)}</div>
-              <button data-act="edit-name">Cambiar mi nombre</button>
-              <button data-act="logout">Cerrar sesión</button>
+              <button data-act="install" hidden>${icon('phone')} Instalar app</button>
+              <button data-act="edit-name">${icon('edit')} Cambiar mi nombre</button>
+              <button data-act="logout">${icon('logout')} Cerrar sesión</button>
             </div>
           </div>
         </div>
-      </div>
-    </header>
-    <main id="view" tabindex="-1"></main>`;
+      </aside>
+      <main id="view" tabindex="-1"></main>
+    </div>`;
+  loadSideProjects();
 
   // Menús desplegables
   app.querySelectorAll('.dropdown').forEach(dd => {
@@ -124,8 +133,39 @@ function renderShell() {
     } catch (e) { toast(errorMessage(e), 'error'); }
   });
 
+  app.querySelector('[data-act="install"]').addEventListener('click', async () => {
+    if (!installPrompt) return installHelp();
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') installPrompt = window.__installPrompt = null;
+    showInstall();
+  });
+  showInstall();
+
   if (api.demo) bindDemoBar();
   refreshBell();
+}
+
+// Accesos directos a los proyectos en la barra lateral
+async function loadSideProjects() {
+  const box = document.getElementById('side-projects');
+  if (!box) return;
+  try {
+    const list = (await api.projects()).filter(p => !p.archived);
+    box.innerHTML = list.length
+      ? list.map(p => `<a href="#/proyecto/${p.id}" data-proj="${p.id}"><i style="--c:${esc(p.color)}"></i><span>${esc(p.name)}</span></a>`).join('')
+      : '<p class="side-empty">Todavía no estás en ningún proyecto.</p>';
+    markActive();
+  } catch { box.innerHTML = ''; }
+}
+
+function markActive() {
+  const hash = location.hash || '#/';
+  const proj = hash.match(/^#\/proyecto\/([\w-]+)/)?.[1];
+  app.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active',
+    (a.dataset.nav === 'home' && hash === '#/') || (a.dataset.nav === 'users' && hash === '#/usuarios') ||
+    (a.dataset.nav === 'turnos' && hash === '#/turnos') || (a.dataset.nav === 'sitio' && hash === '#/sitio')));
+  app.querySelectorAll('[data-proj]').forEach(a => a.classList.toggle('active', a.dataset.proj === proj));
 }
 
 function demoBar() {
@@ -171,8 +211,8 @@ async function route() {
   if (!me) return;
   const hash = location.hash || '#/';
   const view = document.getElementById('view');
-  app.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active',
-    (a.dataset.nav === 'home' && (hash === '#/' || hash.startsWith('#/proyecto'))) || (a.dataset.nav === 'users' && hash === '#/usuarios')));
+  markActive();
+  loadSideProjects();
   for (const [re, get] of routes) {
     const m = hash.match(re);
     if (!m) continue;
@@ -186,6 +226,46 @@ async function route() {
     return;
   }
   view.innerHTML = '<div class="page"><div class="empty"><strong>Página no encontrada</strong><p><a href="#/">Volver al inicio</a></p></div></div>';
+}
+
+// "Instalar app": index.html guarda el aviso del navegador apenas llega (window.__installPrompt).
+// El botón se muestra siempre, salvo que ya se esté usando la app instalada; si el navegador
+// no ofrece instalar en ese momento, explica cómo hacerlo a mano.
+let installPrompt = window.__installPrompt || null;
+const isInstalled = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function showInstall() {
+  const b = app.querySelector('[data-act="install"]');
+  if (b) b.hidden = isInstalled();
+}
+window.addEventListener('install-ready', () => { installPrompt = window.__installPrompt; });
+window.addEventListener('appinstalled', () => { installPrompt = window.__installPrompt = null; showInstall(); toast('App instalada'); });
+
+function installHelp() {
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const android = /Android/.test(ua);
+  const edge = /Edg\//.test(ua);
+  const chrome = /Chrome\//.test(ua) && !edge;
+  const secure = window.isSecureContext;
+  let steps;
+  if (!secure) {
+    steps = '<p>Para instalarla, la plataforma tiene que estar publicada con <b>https</b> (por ejemplo en GitHub Pages).</p>';
+  } else if (ios) {
+    steps = '<ol><li>Abrila en <b>Safari</b>.</li><li>Tocá el botón <b>Compartir</b> (el cuadrado con la flecha).</li><li>Elegí <b>Agregar a inicio</b>.</li></ol>';
+  } else if (android) {
+    steps = '<ol><li>Abrila en <b>Chrome</b>.</li><li>Tocá el menú <b>⋮</b> arriba a la derecha.</li><li>Elegí <b>Instalar aplicación</b> o <b>Agregar a la pantalla principal</b>.</li></ol>';
+  } else if (edge) {
+    steps = '<ol><li>Tocá el menú <b>…</b> arriba a la derecha.</li><li>Andá a <b>Aplicaciones</b>.</li><li>Elegí <b>Instalar este sitio como una aplicación</b>.</li></ol>';
+  } else if (chrome) {
+    steps = '<ol><li>Tocá el ícono de instalar a la derecha de la barra de direcciones, si aparece.</li><li>Si no, abrí el menú <b>⋮</b> → <b>Transmitir, guardar y compartir</b> → <b>Instalar página como app…</b></li></ol>';
+  } else {
+    steps = '<p>Este navegador no permite instalar páginas como app. Abrila en <b>Chrome</b> o <b>Edge</b> (en la compu o en Android) o en <b>Safari</b> (en iPhone).</p>';
+  }
+  openForm({
+    title: 'Instalar la app',
+    submit: '',
+    body: `${steps}<p class="hint">Chrome a veces ofrece instalarla recién después de usar la página un ratito (un clic y unos 30 segundos). Si recién entraste, esperá un poco y volvé a tocar <b>Instalar app</b>.</p>`,
+  });
 }
 
 document.addEventListener('click', (ev) => {

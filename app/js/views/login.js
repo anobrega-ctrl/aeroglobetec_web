@@ -9,9 +9,9 @@ export async function renderLogin(el, { api, notice = '' }) {
   el.innerHTML = `
     <main class="center-page space">
       <div class="login-card">
-        <span class="brand-name big">Aero<b>Glob</b>ETec</span>
-        <h1>Plataforma de proyectos</h1>
-        <p class="muted">Entrá con tu cuenta de la ETec: <b>@etec.um.edu.ar</b> o <b>@alumno.etec.um.edu.ar</b>.</p>
+        <div class="login-logo"><img src="icons/icon-192.png" alt="" width="36" height="36"/>AeroGlobETec</div>
+        <h1>Entrar a la plataforma</h1>
+        <p class="muted">Usá tu cuenta de la ETec (@etec.um.edu.ar o @alumno.etec.um.edu.ar).</p>
         ${urlError ? `<p class="alert error">${esc(friendly(urlError))}</p>` : ''}
         <div id="login-msg"></div>
         ${api.demo ? demoLogin(api) : `
@@ -34,7 +34,7 @@ export async function renderLogin(el, { api, notice = '' }) {
             </label>
             <button class="btn ghost" type="submit">Entrar con el código</button>
           </form>`}
-        <a class="muted small back" href="../rover-cate-2027.html">← Volver a la página del Dron Rover</a>
+        <a class="muted back" href="../">Ir a la web del taller</a>
       </div>
     </main>`;
 

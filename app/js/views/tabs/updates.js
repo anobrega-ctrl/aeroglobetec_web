@@ -1,4 +1,6 @@
-import { esc, name, avatar, UPDATE_STATUS, options, field, openForm, confirmAction, toast, errorMessage, fmtDateTime, timeAgo, fileSize, emptyState } from '../../ui.js';
+import { esc, name, avatar, icon, mentionInput, withMentions, UPDATE_STATUS, options, field, openForm, confirmAction, toast, errorMessage, fmtDateTime, timeAgo, fileSize, emptyState } from '../../ui.js';
+
+const commentsLabel = (n) => (n ? `${n} comentario${n === 1 ? '' : 's'}` : 'Comentar');
 
 export async function renderUpdates(el, ctx) {
   const { api, project, areas, staff, me } = ctx;
@@ -11,7 +13,7 @@ export async function renderUpdates(el, ctx) {
       <select id="f-status" aria-label="Filtrar por estado">${options(Object.entries(UPDATE_STATUS).map(([value, label]) => ({ value, label })), staff ? 'pendiente' : '', { empty: 'Todos los estados' })}</select>
       <label class="check"><input type="checkbox" id="f-mine"/> Solo los míos</label>
       <span class="grow"></span>
-      <button class="btn primary" id="new-update">+ Subir avance</button>
+      <button class="btn primary" id="new-update">${icon('plus')} Subir avance</button>
     </div>
     <div id="list" class="updates"></div>`;
 
@@ -47,10 +49,10 @@ export async function renderUpdates(el, ctx) {
         ${t ? `<p class="small muted">Tarea: ${esc(t.title)}</p>` : ''}
         ${u.body ? `<p class="body">${esc(u.body)}</p>` : ''}
         ${u.attachments?.length ? `<ul class="attachments">${u.attachments.map((f, i) => `
-          <li><button class="file-link" data-file="${u.id}:${i}">📎 ${esc(f.name)}</button> <small class="muted">${fileSize(f.size)}</small></li>`).join('')}</ul>` : ''}
+          <li><button class="file-link" data-file="${u.id}:${i}">${icon('clip')}${esc(f.name)}</button> <small class="muted">${fileSize(f.size)}</small></li>`).join('')}</ul>` : ''}
         ${u.feedback ? `<div class="feedback"><b>Devolución${u.reviewed_by ? ` de ${esc(name(ctx.member(u.reviewed_by)))}` : ''}:</b> ${esc(u.feedback)}</div>` : ''}
         <footer>
-          <button class="link-btn" data-comments="${u.id}">💬 Comentarios (${nComments})</button>
+          <button class="link-btn" data-comments="${u.id}">${commentsLabel(nComments)}</button>
           <span class="grow"></span>
           ${staff ? `<button class="btn small" data-review="${u.id}">Revisar</button>` : ''}
           ${mine && u.status !== 'aprobado' ? `<button class="link-btn" data-edit="${u.id}">Editar</button>` : ''}
@@ -106,19 +108,20 @@ export async function renderUpdates(el, ctx) {
     box.innerHTML = '<p class="muted small">Cargando…</p>';
     const comments = await api.comments(u.id);
     box.innerHTML = `
-      ${comments.map(c => `<div class="comment">${avatar(ctx.member(c.author_id), 'xs')}<div><b>${esc(name(ctx.member(c.author_id)))}</b> <small class="muted">${timeAgo(c.created_at)}</small><p>${esc(c.body)}</p></div></div>`).join('') || '<p class="muted small">Sin comentarios todavía.</p>'}
-      <form class="comment-form"><input name="body" placeholder="Escribí un comentario…" maxlength="1000" required/><button class="btn small primary">Enviar</button></form>`;
+      ${comments.map(c => `<div class="comment">${avatar(ctx.member(c.author_id), 'xs')}<div><b>${esc(name(ctx.member(c.author_id)))}</b> <small class="muted">${timeAgo(c.created_at)}</small><p>${withMentions(c.body, c.mentions, ctx.members)}</p></div></div>`).join('') || '<p class="muted small">Sin comentarios todavía.</p>'}
+      <form class="comment-form"><div class="grow mention-wrap"><input name="body" placeholder="Escribí un comentario… usá @ para mencionar" maxlength="1000" required autocomplete="off"/></div><button class="btn small primary">Enviar</button></form>`;
+    const getMentions = mentionInput(box.querySelector('[name=body]'), ctx.members.filter(m => m.id !== me.id));
     box.querySelector('form').addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const body = ev.target.body.value.trim();
       if (!body) return;
       try {
-        await api.addComment(u.id, body);
+        await api.addComment(u.id, body, getMentions(body));
         u.comments = [{ count: (u.comments?.[0]?.count ?? 0) + 1 }];
         box.hidden = true;
         await toggleComments(u, box);
         const btn = list.querySelector(`[data-comments="${u.id}"]`);
-        if (btn) btn.textContent = `💬 Comentarios (${u.comments[0].count})`;
+        if (btn) btn.textContent = commentsLabel(u.comments[0].count);
       } catch (e) { toast(errorMessage(e), 'error'); }
     });
   }

@@ -4,10 +4,14 @@ Sitio y herramientas del taller AeroGlobETec (ETec · Universidad de Mendoza).
 
 | Ruta | Qué es |
 |---|---|
-| `AeroGlobETec_Navegacion_Por_Pestanas.html` | Sitio público del taller |
-| `rover-cate-2027.html` | Página interna del proyecto Dron Rover (CATE 2027) |
-| `app/` | Plataforma de proyectos: login, proyectos, tareas, avances y rendimiento |
+| `index.html` | Sitio público del taller (su contenido se edita desde la plataforma, en **Sitio web**) |
+| `assets/` | Imágenes de la web pública (logos, íconos e imagen para compartir el link) |
+| `app/` | Plataforma: proyectos, tareas, avances, ensayos, turnos, rendimiento y editor del sitio |
+| `app/sitio/editor.html` | Editor de contenidos del sitio público (se abre dentro de la plataforma) |
 | `supabase/schema.sql` | Base de datos de la plataforma (tablas, permisos y automatismos) |
+| `supabase/textos_sitio_borrador.sql` | Propuesta de textos para la web: los carga como borrador; se revisan y publican desde **Sitio web** |
+| `supabase/imagenes_sitio.sql` | Pasa los logos del contenido publicado a los archivos de `assets/`. **Correrlo después de publicar la web nueva.** |
+| `supabase/presentacion_dron_rover.sql` | Carga la presentación del proyecto Dron Rover en la plataforma |
 
 ## La plataforma
 
@@ -29,16 +33,25 @@ insert into public.admins (email) values ('nombre@alumno.etec.um.edu.ar');
 **Qué tiene cada proyecto**
 
 - **Resumen:** avance general, tareas vencidas, próximo hito con cuenta regresiva y avance por área.
+- **Presentación:** la ficha del proyecto (qué es, misión, organización), con formato simple. La editan docentes y líderes.
 - **Tareas:** tablero Kanban (pendiente → en curso → en revisión → hecha). Docentes y líderes las crean y las asignan. Cada estudiante mueve solo las suyas y las manda a revisión. Solo un docente o líder las marca como hechas.
-- **Avances:** los estudiantes suben lo que hicieron, con fotos y archivos. Docentes y líderes los aprueban o piden cambios, con nota de 1 a 10 y devolución. Todos pueden comentar.
+- **Avances:** los estudiantes suben lo que hicieron, con fotos y archivos. Docentes y líderes los aprueban o piden cambios, con nota de 1 a 10 y devolución. Todos pueden comentar y mencionar con `@` a otros integrantes, que reciben un aviso.
 - **Hitos:** fechas clave del proyecto, con las tareas asociadas a cada una.
+- **Ensayos y fallas:** registro de cada prueba (objetivo, resultado, fotos) y de las fallas encontradas, con gravedad, responsable y cómo se resolvieron. Si un ensayo no sale bien, la app ofrece reportar la falla en el momento.
 - **Equipo y áreas:** integrantes del proyecto y áreas (Mecánica, Electrónica, etc.) con sus responsables.
 - **Archivos:** CAD, código, fotos y documentación, ordenados por carpeta.
 - **Inventario:** componentes, cantidades, precios, estado de compra y responsable, con el presupuesto total.
 - **Rendimiento:** puntaje orientativo por estudiante y resumen por área. Ver la fórmula abajo.
 - **Bitácora:** historial automático de todo lo que pasa en el proyecto.
-- **Informe PDF:** resumen imprimible del proyecto.
-- **Notificaciones:** la campanita avisa cuando te asignan una tarea, te revisan un avance o te comentan.
+- **Informe PDF:** resumen imprimible del proyecto, con ensayos y fallas.
+- **Excel:** descarga de tareas, avances, ensayos, fallas, hitos e inventario en un `.xlsx`. Docentes y líderes también reciben la hoja de rendimiento.
+- **Notificaciones:** la campanita avisa cuando te asignan una tarea o una falla, te revisan un avance, te comentan o te mencionan.
+
+**Sitio web:** docentes y admins editan textos, apartados, fotos, galerías y colores de la web pública desde la plataforma, con vista previa. Los cambios se guardan como borrador y la web los muestra recién al tocar **Publicar en la web**. La base de datos solo deja guardar, publicar y subir fotos a docentes y admins con sesión iniciada. La web pública lee lo publicado sin login.
+
+**Turnos de equipos:** agenda semanal para reservar la impresora 3D, la estación de soldado, el osciloscopio, etc. Cada turno queda a nombre de un proyecto y un área, y la base de datos no deja que dos turnos del mismo equipo se superpongan. Todos ven la agenda completa. Docentes y líderes cargan o desactivan equipos desde el botón **Equipos**.
+
+**App instalable:** en Chrome o Android aparece **📲 Instalar app** en el menú de usuario (o el ícono de instalar en la barra de direcciones). En iPhone se instala desde *Compartir → Agregar a inicio*. Solo funciona con `https` o en `localhost`.
 
 **Fórmula del rendimiento (0 a 100)**
 
@@ -60,8 +73,10 @@ En [Supabase](https://supabase.com/dashboard), dentro del proyecto, abrí **SQL 
 
 En **Authentication → URL Configuration**:
 
-- **Site URL:** la dirección donde se publique la plataforma, por ejemplo `https://anobrega-ctrl.github.io/aeroglobetec_web/app/`.
-- **Redirect URLs:** agregá esa misma dirección y también `http://localhost:8765/app/` para probar en la compu.
+- **Site URL:** `https://aeroglobe.wetec.um.edu.ar/app/`
+- **Redirect URLs:** `https://aeroglobe.wetec.um.edu.ar/app/` y `http://localhost:8765/app/` (para probar en la compu).
+
+En Google Cloud, en el cliente OAuth, agregá `https://aeroglobe.wetec.um.edu.ar` en **Orígenes autorizados de JavaScript**.
 
 ### 3. Login por link al mail (ya funciona)
 
@@ -79,7 +94,7 @@ La pantalla de login ya tiene el campo para escribirlo. El servidor de mails que
 
 1. En [Google Cloud Console](https://console.cloud.google.com/), creá un proyecto. Andá a **APIs y servicios → Pantalla de consentimiento de OAuth**. Si la ETec usa Google Workspace, elegí **Interno**: así solo entran cuentas de la escuela.
 2. En **Credenciales → Crear credenciales → ID de cliente de OAuth**, elegí **Aplicación web**.
-3. En **URIs de redireccionamiento autorizados**, poné `https://rncvkqvpgtvxegvpkvtk.supabase.co/auth/v1/callback`.
+3. En **URIs de redireccionamiento autorizados**, poné `https://nveisqekmbcdvnuebice.supabase.co/auth/v1/callback`.
 4. Copiá el **Client ID** y el **Client Secret**. En Supabase, andá a **Authentication → Sign In / Providers → Google**, pegalos y activá el proveedor.
 
 ### 5. Claves
@@ -101,7 +116,19 @@ Después abrí:
 
 ## Publicar
 
-La plataforma es HTML, CSS y JavaScript sin compilación, así que se puede publicar con **GitHub Pages**: en el repo, **Settings → Pages → Deploy from a branch → main / (root)**. Queda en `https://<usuario>.github.io/aeroglobetec_web/app/`. Acordate de cargar esa dirección en el paso 2.
+La web se publica en el servidor de la escuela: **https://aeroglobe.wetec.um.edu.ar**. No hace falta compilar nada; se suben los archivos tal cual, a la raíz del sitio:
+
+```
+index.html     la web pública
+assets/        imágenes de la web
+app/           la plataforma (queda en /app/)
+```
+
+Las carpetas `supabase/` y el `README.md` no hace falta subirlas.
+
+**Importante:** el contenido del editor usa las imágenes de `assets/`, así que esa carpeta siempre tiene que subirse junto con `index.html`.
+
+La app instalable (PWA) y el login necesitan `https`, que el servidor ya tiene.
 
 ## Cómo está armado
 
