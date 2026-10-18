@@ -561,3 +561,40 @@ p.pre{white-space:pre-wrap}
 .tr-en{border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;margin:4px 0 12px}
 .tr-en summary{cursor:pointer;font-weight:600;font-size:13.5px}
 .tr-en[open] summary{margin-bottom:10px}
+/* Imagen de marca */
+.hello-actions{display:flex;gap:8px;flex-wrap:wrap}
+.brand-guide{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:22px}
+.brand-colors{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.brand-color{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:0 0 8px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface);overflow:hidden;text-align:left;cursor:pointer;font:inherit;color:var(--text)}
+.brand-color:hover{border-color:var(--border-strong)}
+.brand-color span{display:block;width:100%;height:46px;margin-bottom:6px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.06)}
+.brand-color b,.brand-color code,.brand-color small{padding:0 10px}
+.brand-color b{font-size:13px;font-weight:600}
+.brand-color code{font-size:12px;color:var(--muted)}
+.brand-color small{font-size:11.5px;color:var(--faint)}
+.brand-fonts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.brand-fonts>div{display:flex;flex-direction:column;gap:2px}
+.brand-font-sample{font-size:22px;line-height:1.2;margin:0 0 4px;letter-spacing:-.02em;font-weight:700}
+.brand-fonts small svg{width:12px;height:12px;vertical-align:-1px}
+.brand-rules{margin:14px 0 0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.7}
+.brand-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.brand-chip{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:500 13px var(--font);cursor:pointer}
+.brand-chip small{color:var(--faint);margin-left:3px}
+.brand-chip:hover{border-color:var(--border-strong)}
+.brand-chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.brand-chip.active small{color:rgba(255,255,255,.75)}
+.brand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.brand-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.brand-preview{display:grid;place-items:center;aspect-ratio:4/3;background:var(--subtle);border-bottom:1px solid var(--border);padding:14px;color:var(--muted)}
+.brand-preview.checker{background-color:#fff;background-image:linear-gradient(45deg,#eef1f5 25%,transparent 25%),linear-gradient(-45deg,#eef1f5 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eef1f5 75%),linear-gradient(-45deg,transparent 75%,#eef1f5 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}
+.brand-preview img{max-width:100%;max-height:100%;object-fit:contain}
+.brand-file{display:flex;flex-direction:column;align-items:center;gap:6px}
+.brand-file svg{width:34px;height:34px}
+.brand-file b{font-size:13px;letter-spacing:.04em}
+.brand-body{display:flex;flex-direction:column;gap:3px;padding:12px 14px 6px;flex:1}
+.brand-body strong{font-weight:600;font-size:14px}
+.brand-body p{margin:0;font-size:12.5px;line-height:1.5}
+.brand-body small{font-size:12px}
+.brand-actions{display:flex;align-items:center;gap:6px;padding:8px 14px 12px}
+@media(max-width:900px){.brand-guide{grid-template-columns:1fr}.brand-colors{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.brand-fonts{grid-template-columns:1fr}.brand-grid{grid-template-columns:1fr 1fr;gap:10px}.brand-actions{flex-wrap:wrap}}

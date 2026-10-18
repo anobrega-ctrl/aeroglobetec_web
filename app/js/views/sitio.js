@@ -1,7 +1,7 @@
 // Sitio web: contenido de la web pública (editor) y docentes.
 // El editor (sitio/editor.html) usa la misma sesión; la base solo deja guardar y publicar
 // a docentes y admins. Docentes y trayectoria se guardan en sus propias tablas y se ven en la web al instante.
-import { esc, icon, canManageRoles, field, options, openForm, confirmAction, toast, errorMessage, emptyState, fmtDate } from '../ui.js?v=202610172052';
+import { esc, icon, canManageRoles, field, options, openForm, confirmAction, toast, errorMessage, emptyState, fmtDate } from '../ui.js?v=202610172357';
 
 export async function renderSitio(el, ctx) {
   const { api, me, params } = ctx;

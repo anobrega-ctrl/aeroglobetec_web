@@ -1512,3 +1512,63 @@ create policy site_trayectoria_write on public.site_trayectoria for all to authe
 drop trigger if exists site_trayectoria_touch on public.site_trayectoria;
 create trigger site_trayectoria_touch before update on public.site_trayectoria
   for each row execute function public.touch_updated_at();
+
+-- =====================================================================
+-- Imagen de marca: logos, favicons, folletos, tarjetas, imágenes y plantillas
+-- del taller, para que todos los integrantes los descarguen desde la plataforma.
+-- Los archivos van al bucket público "marca" (son material de difusión).
+-- Ven todos los integrantes; suben, editan y borran docentes, líderes y admins.
+-- =====================================================================
+create table if not exists public.brand_assets (
+  id          uuid primary key default gen_random_uuid(),
+  category    text not null default 'otros' check (category in ('logos', 'iconos', 'folletos', 'tarjetas', 'imagenes', 'plantillas', 'otros')),
+  title       text not null check (length(trim(title)) between 1 and 120),
+  description text not null default '' check (length(description) <= 400),
+  url         text not null check (url ~ '^https://'),
+  path        text not null default '',        -- ruta en el bucket "marca" (vacía si es un link externo, como Canva)
+  file_name   text not null default '',
+  mime        text not null default '',
+  size        bigint not null default 0,
+  position    integer not null default 0,
+  created_by  uuid references public.profiles(id) on delete set null default auth.uid(),
+  created_at  timestamptz not null default now()
+);
+
+alter table public.brand_assets enable row level security;
+drop policy if exists brand_assets_read on public.brand_assets;
+drop policy if exists brand_assets_write on public.brand_assets;
+create policy brand_assets_read on public.brand_assets for select to authenticated
+  using (exists (select 1 from public.profiles where id = auth.uid()));
+create policy brand_assets_write on public.brand_assets for all to authenticated
+  using (public.is_staff()) with check (public.is_staff());
+
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('marca', 'marca', true, 26214400)  -- 25 MB por archivo
+on conflict (id) do nothing;
+
+drop policy if exists marca_insert on storage.objects;
+drop policy if exists marca_update on storage.objects;
+drop policy if exists marca_delete on storage.objects;
+create policy marca_insert on storage.objects for insert to authenticated
+  with check (bucket_id = 'marca' and public.is_staff());
+create policy marca_update on storage.objects for update to authenticated
+  using (bucket_id = 'marca' and public.is_staff()) with check (bucket_id = 'marca' and public.is_staff());
+create policy marca_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'marca' and public.is_staff());
+
+-- Lo que ya está en la web (solo la primera vez)
+do $$
+declare base text := 'https://aeroglobe.wetec.um.edu.ar';
+begin
+  if not exists (select 1 from public.brand_assets) then
+    insert into public.brand_assets (category, title, description, url, file_name, mime, position, created_by) values
+      ('logos',    'Logo del encabezado',       'El logo redondo que usa la web arriba a la izquierda.',          base || '/assets/logo-encabezado.webp', 'logo-encabezado.webp', 'image/webp', 1, null),
+      ('logos',    'Emblema',                   'Versión emblema del taller.',                                   base || '/assets/emblema.webp',         'emblema.webp',         'image/webp', 2, null),
+      ('logos',    'Logo para fondo claro',     'Para usar sobre fondos blancos o claros.',                      base || '/assets/logo-claro.webp',      'logo-claro.webp',      'image/webp', 3, null),
+      ('iconos',   'Favicon 48 px',             'Ícono de la pestaña del navegador (web pública).',              base || '/assets/favicon-48.png',       'favicon-48.png',       'image/png',  1, null),
+      ('iconos',   'Ícono para iPhone',         'Apple touch icon, 180 px.',                                     base || '/assets/apple-touch-icon.png', 'apple-touch-icon.png', 'image/png',  2, null),
+      ('iconos',   'Ícono de la app 512 px',    'El ícono de la plataforma instalada.',                          base || '/app/icons/icon-512.png',      'icon-512.png',         'image/png',  3, null),
+      ('iconos',   'Ícono de la app 192 px',    'Versión chica del ícono de la plataforma.',                     base || '/app/icons/icon-192.png',      'icon-192.png',         'image/png',  4, null),
+      ('imagenes', 'Imagen para compartir',     'La que aparece al mandar el link de la web por WhatsApp o redes.', base || '/assets/compartir.png',     'compartir.png',        'image/png',  1, null);
+  end if;
+end $$;

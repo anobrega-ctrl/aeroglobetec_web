@@ -1,4 +1,4 @@
-import { esc, markdown, openForm, toast, errorMessage, emptyState } from '../../ui.js?v=202610172052';
+import { esc, markdown, openForm, toast, errorMessage, emptyState } from '../../ui.js?v=202610172357';
 
 // Ficha del proyecto: qué es, misión, cómo se organiza. La escriben docentes y líderes.
 export async function renderPresentation(el, ctx) {

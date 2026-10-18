@@ -1,17 +1,18 @@
 // Punto de entrada: elige la API (Supabase o demo), controla la sesión y el ruteo por hash.
-import { DEMO_MODE } from './config.js?v=202610172052';
-import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610172052';
-import { renderLogin } from './views/login.js?v=202610172052';
-import { renderDashboard } from './views/dashboard.js?v=202610172052';
-import { renderProject } from './views/project.js?v=202610172052';
-import { renderUsers } from './views/users.js?v=202610172052';
-import { renderReport } from './views/report.js?v=202610172052';
-import { renderTurnos } from './views/turnos.js?v=202610172052';
-import { renderSitio } from './views/sitio.js?v=202610172052';
-import { renderEventos } from './views/eventos.js?v=202610172052';
-import { renderEvento } from './views/evento.js?v=202610172052';
+import { DEMO_MODE } from './config.js?v=202610172357';
+import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610172357';
+import { renderLogin } from './views/login.js?v=202610172357';
+import { renderDashboard } from './views/dashboard.js?v=202610172357';
+import { renderProject } from './views/project.js?v=202610172357';
+import { renderUsers } from './views/users.js?v=202610172357';
+import { renderReport } from './views/report.js?v=202610172357';
+import { renderTurnos } from './views/turnos.js?v=202610172357';
+import { renderSitio } from './views/sitio.js?v=202610172357';
+import { renderEventos } from './views/eventos.js?v=202610172357';
+import { renderMarca } from './views/marca.js?v=202610172357';
+import { renderEvento } from './views/evento.js?v=202610172357';
 
-const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610172052') : await import('./api.js?v=202610172052');
+const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610172357') : await import('./api.js?v=202610172357');
 const app = document.getElementById('app');
 let me = null;
 
@@ -24,6 +25,7 @@ const routes = [
   [/^#\/eventos$/, () => renderEventos],
   [/^#\/evento\/([\w-]+)(?:\/(\w+))?$/, () => renderEvento],
   [/^#\/sitio(?:\/(\w+))?$/, () => renderSitio],
+  [/^#\/marca$/, () => renderMarca],
 ];
 
 async function boot() {
@@ -79,6 +81,7 @@ function renderShell() {
         <nav class="side-nav" aria-label="Principal">
           <a href="#/" data-nav="home">${icon('home')}<span>Inicio</span></a>
           <a href="#/eventos" data-nav="eventos">${icon('trophy')}<span>Charlas y competencias</span></a>
+          <a href="#/marca" data-nav="marca">${icon('image')}<span>Imagen de marca</span></a>
           <a href="#/turnos" data-nav="turnos">${icon('calendar')}<span>Turnos</span></a>
           ${staff ? `<a href="#/usuarios" data-nav="users">${icon('users')}<span>Usuarios</span></a>` : ''}
           ${canManageRoles(me) ? `<a href="#/sitio" data-nav="sitio">${icon('globe')}<span>Sitio web</span></a>` : ''}
@@ -171,7 +174,7 @@ function markActive() {
   const proj = hash.match(/^#\/proyecto\/([\w-]+)/)?.[1];
   app.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active',
     (a.dataset.nav === 'home' && hash === '#/') || (a.dataset.nav === 'users' && hash === '#/usuarios') ||
-    (a.dataset.nav === 'turnos' && hash === '#/turnos') || (a.dataset.nav === 'eventos' && (hash === '#/eventos' || hash.startsWith('#/evento/'))) || (a.dataset.nav === 'sitio' && hash.startsWith('#/sitio'))));
+    (a.dataset.nav === 'turnos' && hash === '#/turnos') || (a.dataset.nav === 'marca' && hash === '#/marca') || (a.dataset.nav === 'eventos' && (hash === '#/eventos' || hash.startsWith('#/evento/'))) || (a.dataset.nav === 'sitio' && hash.startsWith('#/sitio'))));
   app.querySelectorAll('[data-proj]').forEach(a => a.classList.toggle('active', a.dataset.proj === proj));
 }
 

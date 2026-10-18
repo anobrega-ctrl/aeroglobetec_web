@@ -156,6 +156,21 @@ function seed() {
   };
 }
 
+// Imagen de marca de ejemplo: los archivos que ya usa la web
+function demoBrand() {
+  const site = (p) => new URL('../' + p, location.href).href;
+  const a = (category, title, description, path, mime, position) => ({ id: uid(), category, title, description, url: site(path), path: '', file_name: path.split('/').pop(), mime, size: 0, position, created_by: null, created_at: now() });
+  return [
+    a('logos', 'Logo del encabezado', 'El logo redondo que usa la web arriba a la izquierda.', 'assets/logo-encabezado.webp', 'image/webp', 1),
+    a('logos', 'Emblema', 'Versión emblema del taller.', 'assets/emblema.webp', 'image/webp', 2),
+    a('logos', 'Logo para fondo claro', 'Para usar sobre fondos blancos o claros.', 'assets/logo-claro.webp', 'image/webp', 3),
+    a('iconos', 'Favicon 48 px', 'Ícono de la pestaña del navegador (web pública).', 'assets/favicon-48.png', 'image/png', 1),
+    a('iconos', 'Ícono para iPhone', 'Apple touch icon, 180 px.', 'assets/apple-touch-icon.png', 'image/png', 2),
+    a('iconos', 'Ícono de la app 512 px', 'El ícono de la plataforma instalada.', 'app/icons/icon-512.png', 'image/png', 3),
+    a('imagenes', 'Imagen para compartir', 'La que aparece al mandar el link de la web por WhatsApp o redes.', 'assets/compartir.png', 'image/png', 1),
+  ];
+}
+
 // Docentes de la web y charlas/competencias de ejemplo
 function demoEvents(P, { doc, lider, tomas, sofia, valen }) {
   const E1 = uid(), E2 = uid();
@@ -637,6 +652,29 @@ export const api = {
   async deleteTeacher(id) { if (!(meP().is_admin || meP().role === 'docente')) deny(); db.teachers = db.teachers.filter(t => t.id !== id); save(); },
   async uploadTeacherPhoto() { throw new Error('En modo demo pegá un link https de la foto.'); },
   async uploadSitePhoto() { throw new Error('En modo demo no se pueden subir fotos: pegá links https.'); },
+
+  // ---------- Imagen de marca ----------
+  async brandAssets() {
+    db.brand ||= demoBrand();
+    return clone(db.brand).sort((a, b) => a.category.localeCompare(b.category) || a.position - b.position);
+  },
+  async addBrandAsset(a, file) {
+    if (!staff()) deny();
+    if (file) throw new Error('En modo demo no se pueden subir archivos: agregá un link.');
+    db.brand ||= demoBrand();
+    db.brand.push({ id: uid(), description: '', path: '', file_name: '', mime: '', size: 0, position: db.brand.length + 1, created_by: db.me, created_at: now(), ...a });
+    save();
+  },
+  async updateBrandAsset(id, patch) {
+    if (!staff()) deny();
+    Object.assign((db.brand || []).find(x => x.id === id) || {}, patch);
+    save();
+  },
+  async deleteBrandAsset(a) {
+    if (!staff()) deny();
+    db.brand = (db.brand || []).filter(x => x.id !== a.id);
+    save();
+  },
 
   // ---------- Trayectoria de la web pública ----------
   async trayectoria() { return clone(db.trayectoria || []).sort((a, b) => b.starts_on.localeCompare(a.starts_on)); },

@@ -1,7 +1,7 @@
 // Capa de datos con Supabase. Todas las vistas hablan con la base a través de este módulo.
 // Los permisos reales los aplica la base de datos (ver supabase/schema.sql).
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610172052';
+import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610172357';
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, detectSessionInUrl: true, flowType: 'pkce' },
@@ -366,6 +366,28 @@ export const api = {
     const path = `${folder}/${crypto.randomUUID()}.${ext}`;
     check(await sb.storage.from('aero-media').upload(path, file, { contentType: file.type || undefined }));
     return sb.storage.from('aero-media').getPublicUrl(path).data.publicUrl;
+  },
+
+  // ---------- Imagen de marca (bucket público "marca") ----------
+  async brandAssets() {
+    return check(await sb.from('brand_assets').select('*').order('category').order('position').order('created_at'));
+  },
+  async addBrandAsset(a, file) {
+    let fields = { ...a };
+    if (file) {
+      const path = `${a.category}/${Date.now()}_${safeName(file.name)}`;
+      check(await sb.storage.from('marca').upload(path, file, { contentType: file.type || undefined }));
+      fields = { ...fields, path, url: sb.storage.from('marca').getPublicUrl(path).data.publicUrl, file_name: file.name, mime: file.type || '', size: file.size };
+    }
+    check(await sb.from('brand_assets').insert(fields));
+  },
+  async updateBrandAsset(id, patch) {
+    check(await sb.from('brand_assets').update(patch).eq('id', id));
+  },
+  async deleteBrandAsset(a) {
+    if (a.path) await sb.storage.from('marca').remove([a.path]);
+    const r = check(await sb.from('brand_assets').delete().eq('id', a.id).select('id'));
+    if (!r.length) throw new Error('No tenés permiso para borrar esto.');
   },
 
   // ---------- Trayectoria de la web pública ----------
