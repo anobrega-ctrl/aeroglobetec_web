@@ -1,5 +1,5 @@
 // Charlas y competencias: lista y alta de eventos.
-import { esc, icon, isStaff, field, options, openForm, colorPicker, toast, errorMessage, fmtDate, daysUntil, emptyState, COLORS } from '../ui.js?v=202610180028';
+import { esc, icon, isStaff, field, options, openForm, colorPicker, toast, errorMessage, fmtDate, daysUntil, emptyState, COLORS } from '../ui.js?v=202610180031';
 
 export const KIND = { charla: 'Charla', competencia: 'Competencia' };
 export const EVENT_STATUS = { preparacion: 'En preparación', confirmado: 'Confirmado', realizado: 'Realizado', cancelado: 'Cancelado' };

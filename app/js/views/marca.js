@@ -1,6 +1,6 @@
 // Imagen de marca: logos, favicons, folletos, tarjetas, imágenes y plantillas del taller.
 // Todos los integrantes los ven y descargan; docentes y líderes los suben y ordenan.
-import { esc, icon, isStaff, field, options, openForm, confirmAction, toast, errorMessage, emptyState, fileSize } from '../ui.js?v=202610180028';
+import { esc, icon, isStaff, field, options, openForm, confirmAction, toast, errorMessage, emptyState, fileSize } from '../ui.js?v=202610180031';
 
 export const BRAND_CATS = {
   logos: 'Logos', iconos: 'Íconos y favicons', folletos: 'Folletos', tarjetas: 'Tarjetas',

@@ -1,7 +1,7 @@
 // Capa de datos con Supabase. Todas las vistas hablan con la base a través de este módulo.
 // Los permisos reales los aplica la base de datos (ver supabase/schema.sql).
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610180028';
+import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610180031';
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, detectSessionInUrl: true, flowType: 'pkce' },
@@ -105,6 +105,16 @@ export const api = {
   async setAccess(userId, access) {
     const r = check(await sb.from('profiles').update({ access }).eq('id', userId).select('id'));
     if (!r.length) throw new Error('No tenés permiso para aprobar cuentas.');
+  },
+  // Mails de afuera invitados (docentes y admins)
+  async invites() {
+    return check(await sb.from('invited_emails').select('*').order('created_at', { ascending: false }));
+  },
+  async addInvite(inv) {
+    check(await sb.from('invited_emails').insert({ ...inv, email: inv.email.trim().toLowerCase() }));
+  },
+  async deleteInvite(email) {
+    check(await sb.from('invited_emails').delete().eq('email', email));
   },
   async pendingCount() {
     const { count, error } = await sb.from('profiles').select('id', { count: 'exact', head: true }).eq('access', 'pendiente');

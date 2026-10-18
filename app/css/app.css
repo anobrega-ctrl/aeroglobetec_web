@@ -624,3 +624,5 @@ p.pre{white-space:pre-wrap}
 .waiting-who{display:flex;align-items:center;gap:10px;background:var(--subtle);border:1px solid var(--border);border-radius:var(--r-lg);padding:8px 12px;margin:0;text-align:left;max-width:100%}
 .waiting-who>span{display:flex;flex-direction:column;min-width:0}
 .waiting-who small{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
+.invites{margin-top:18px}
+.invites .avatar svg{width:13px;height:13px}

@@ -1,6 +1,6 @@
 // Informe del proyecto para imprimir o guardar como PDF (usa la impresión del navegador).
-import { esc, name, isStaff, TASK_STATUS, UPDATE_STATUS, ITEM_STATUS, fmtDate, money } from '../ui.js?v=202610180028';
-import { RESULT, SEVERITY, ISSUE_STATUS } from './tabs/ensayos.js?v=202610180028';
+import { esc, name, isStaff, TASK_STATUS, UPDATE_STATUS, ITEM_STATUS, fmtDate, money } from '../ui.js?v=202610180031';
+import { RESULT, SEVERITY, ISSUE_STATUS } from './tabs/ensayos.js?v=202610180031';
 
 export async function renderReport(el, { api, me, params }) {
   const [id] = params;

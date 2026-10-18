@@ -1,4 +1,4 @@
-import { esc, ROLE_LABEL, errorMessage } from '../ui.js?v=202610180028';
+import { esc, ROLE_LABEL, errorMessage } from '../ui.js?v=202610180031';
 
 export async function renderLogin(el, { api, notice = '' }) {
   // Errores al volver del link del mail o de Google (dominio no permitido, link vencido, etc.)
@@ -11,7 +11,7 @@ export async function renderLogin(el, { api, notice = '' }) {
       <div class="login-card">
         <div class="login-logo"><img src="icons/icon-192.png" alt="" width="36" height="36"/>AeroGlobETec</div>
         <h1>Entrar a la plataforma</h1>
-        <p class="muted">Usá tu cuenta de la ETec (@etec.um.edu.ar o @alumno.etec.um.edu.ar).</p>
+        <p class="muted">Usá tu cuenta de la ETec (@etec.um.edu.ar o @alumno.etec.um.edu.ar) o el mail con el que te invitaron.</p>
         ${urlError ? `<p class="alert error">${esc(friendly(urlError))}</p>` : ''}
         <div id="login-msg"></div>
         ${api.demo ? demoLogin(api) : `
@@ -88,7 +88,7 @@ export async function renderLogin(el, { api, notice = '' }) {
 }
 
 function friendly(msg) {
-  if (/Solo se permiten|Database error saving new user/i.test(msg)) return 'Solo se puede entrar con cuentas @etec.um.edu.ar o @alumno.etec.um.edu.ar.';
+  if (/Solo se permiten|Database error saving new user/i.test(msg)) return 'Solo se puede entrar con cuentas @etec.um.edu.ar o @alumno.etec.um.edu.ar, o con un mail que haya invitado un docente.';
   if (/provider is not enabled/i.test(msg)) return 'El login con Google todavía no está activado. Usá el link por mail.';
   if (/rate limit/i.test(msg)) return 'Se mandaron demasiados mails seguidos. Esperá unos minutos y probá de nuevo.';
   if (/code verifier|auth code|flow state/i.test(msg)) return 'Abrí el link en el mismo navegador donde lo pediste, o pedí uno nuevo y escribí el código.';

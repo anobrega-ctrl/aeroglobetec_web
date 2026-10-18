@@ -244,13 +244,23 @@ declare
   r public.user_role;
   who text := coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1));
   admin boolean := exists (select 1 from admins where email = lower(new.email));
+  inv_role public.user_role;
+  inv_by uuid;
 begin
+  -- Mails de afuera invitados por un docente o admin (Usuarios → Mails de afuera)
+  select i.role, i.invited_by into inv_role, inv_by from invited_emails i where i.email = lower(new.email);
+  if inv_role is not null then
+    insert into profiles (id, email, full_name, avatar_url, role, access, access_by, access_at)
+    values (new.id, lower(new.email), who, new.raw_user_meta_data->>'avatar_url', inv_role, 'aprobado', inv_by, now());
+    return new;
+  end if;
+
   if domain = 'etec.um.edu.ar' then
     r := 'docente';
   elsif domain = 'alumno.etec.um.edu.ar' then
     r := 'estudiante';
   else
-    raise exception 'Solo se permiten cuentas @etec.um.edu.ar o @alumno.etec.um.edu.ar';
+    raise exception 'Solo se permiten cuentas @etec.um.edu.ar o @alumno.etec.um.edu.ar, o mails invitados por un docente';
   end if;
 
   insert into profiles (id, email, full_name, avatar_url, role, access)
@@ -1614,6 +1624,26 @@ begin
       ('imagenes', 'Imagen para compartir',     'La que aparece al mandar el link de la web por WhatsApp o redes.', base || '/assets/compartir.png',     'compartir.png',        'image/png',  1, null);
   end if;
 end $$;
+
+-- =====================================================================
+-- Mails de afuera: docentes y admins pueden invitar un mail que no sea de la ETec
+-- (un mentor, un ex alumno, alguien de otra escuela). Al entrar por primera vez queda
+-- aprobado con el rol elegido. El rol docente solo lo puede dar un admin.
+-- =====================================================================
+create table if not exists public.invited_emails (
+  email       text primary key check (email = lower(email) and email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
+  role        public.user_role not null default 'estudiante',
+  note        text not null default '' check (length(note) <= 120),
+  invited_by  uuid references public.profiles(id) on delete set null default auth.uid(),
+  created_at  timestamptz not null default now()
+);
+
+alter table public.invited_emails enable row level security;
+drop policy if exists invited_emails_read on public.invited_emails;
+drop policy if exists invited_emails_write on public.invited_emails;
+create policy invited_emails_read on public.invited_emails for select to authenticated using (public.is_docente());
+create policy invited_emails_write on public.invited_emails for all to authenticated
+  using (public.is_docente()) with check (public.is_docente() and (role <> 'docente' or public.is_admin()));
 
 -- =====================================================================
 -- Solo cuentas aprobadas: una política restrictiva en cada tabla se suma a las demás,

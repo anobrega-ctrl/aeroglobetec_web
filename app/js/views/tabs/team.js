@@ -1,4 +1,4 @@
-import { esc, name, avatar, ROLE_LABEL, roleChip, field, openForm, confirmAction, colorPicker, toast, errorMessage, emptyState, COLORS, hasAccess } from '../../ui.js?v=202610180028';
+import { esc, name, avatar, ROLE_LABEL, roleChip, field, openForm, confirmAction, colorPicker, toast, errorMessage, emptyState, COLORS, hasAccess } from '../../ui.js?v=202610180031';
 
 export async function renderTeam(el, ctx) {
   const { api, project, members, areas, staff, me } = ctx;

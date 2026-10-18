@@ -1,10 +1,11 @@
-import { esc, name, avatar, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, hasAccess, options, confirmAction, toast, errorMessage, fmtDate, timeAgo } from '../ui.js?v=202610180028';
+import { esc, name, avatar, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, hasAccess, options, field, openForm, confirmAction, toast, errorMessage, fmtDate, timeAgo } from '../ui.js?v=202610180031';
 
 export async function renderUsers(el, ctx) {
   const { api, me } = ctx;
   if (!isStaff(me)) { location.hash = '#/'; return; }
-  const all = await api.profiles();
   const canEdit = canManageRoles(me);
+  const [all, invites] = await Promise.all([api.profiles(), canEdit ? api.invites().catch(() => []) : []]);
+  const registered = new Set(all.map(p => p.email));
   const pending = all.filter(u => u.access === 'pendiente' && !u.is_admin);
   const rejected = all.filter(u => u.access === 'rechazado' && !u.is_admin);
   const users = all.filter(hasAccess);
@@ -59,6 +60,17 @@ export async function renderUsers(el, ctx) {
           </tr>`).join('')}</tbody>
       </table></div>
 
+      ${canEdit ? `
+      <section class="panel invites">
+        <div class="panel-head"><h2>Mails de afuera</h2><button class="btn small" id="invite">${icon('plus')} Invitar un mail</button></div>
+        <p class="hint">Para alguien que no tiene mail de la ETec (un mentor, un ex alumno, alguien de otra escuela). Cuando entre con ese mail queda aprobado directamente. Tiene que entrar con el <b>link por mail</b> o con Google si es una cuenta de Google.</p>
+        ${invites.length ? `<ul class="access-list">${invites.map(i => `
+          <li>
+            <span class="who"><span class="avatar sm">${icon('link')}</span><span><b>${esc(i.email)}</b><small class="muted">${ROLE_LABEL[i.role]}${i.note ? ` · ${esc(i.note)}` : ''} · ${registered.has(i.email) ? 'ya entró' : 'todavía no entró'}</small></span></span>
+            <button class="link-btn danger-text" data-uninvite="${esc(i.email)}">Quitar invitación</button>
+          </li>`).join('')}</ul>` : '<p class="muted small">No hay mails de afuera invitados.</p>'}
+      </section>` : ''}
+
       ${rejected.length ? `
       <details class="rejected">
         <summary>Sin acceso (${rejected.length})</summary>
@@ -82,7 +94,37 @@ export async function renderUsers(el, ctx) {
       toast(`Ahora es ${ROLE_LABEL[ev.target.value].toLowerCase()}`);
     } catch (e) { toast(errorMessage(e), 'error'); }
   });
+  el.querySelector('#invite')?.addEventListener('click', async () => {
+    const roles = me.is_admin ? ['estudiante', 'lider', 'docente'] : ['estudiante', 'lider'];
+    const data = await openForm({
+      title: 'Invitar un mail de afuera',
+      body: `
+        ${field('Mail', '<input type="email" name="email" required placeholder="nombre@gmail.com" autocomplete="off"/>')}
+        ${field('Rol', `<select name="role">${options(roles.map(r => ({ value: r, label: ROLE_LABEL[r] })), 'estudiante')}</select>`, me.is_admin ? '' : 'Solo un admin puede invitar como docente.')}
+        ${field('Quién es', '<input name="note" maxlength="120" placeholder="Ej: mentor de robótica, ex alumno…"/>')}`,
+      submit: 'Invitar',
+    });
+    if (!data) return;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)) { toast('Revisá el mail', 'error'); return; }
+    if (/@(alumno\.)?etec\.um\.edu\.ar$/i.test(data.email)) { toast('Los mails de la ETec no hace falta invitarlos: entran y se aprueban en Pedidos de acceso.', 'error'); return; }
+    try {
+      await api.addInvite({ email: data.email, role: data.role, note: data.note });
+      toast('Listo. Ya puede entrar con ese mail.');
+      renderUsers(el, ctx);
+    } catch (e) { toast(/duplicate|ya está/i.test(errorMessage(e)) ? 'Ese mail ya está invitado.' : errorMessage(e), 'error'); }
+  });
+
   el.querySelector('.page').addEventListener('click', async (ev) => {
+    const un = ev.target.closest('[data-uninvite]');
+    if (un) {
+      const email = un.dataset.uninvite;
+      if (!await confirmAction('Quitar invitación', registered.has(email)
+        ? `${email} ya entró: quitar la invitación no le saca el acceso. Para eso usá «Quitar acceso» en la lista de usuarios.`
+        : `${email} ya no va a poder crear su cuenta.`, 'Quitar')) return;
+      try { await api.deleteInvite(email); toast('Invitación quitada'); renderUsers(el, ctx); }
+      catch (e) { toast(errorMessage(e), 'error'); }
+      return;
+    }
     const b = ev.target.closest('[data-access]');
     if (!b) return;
     const u = all.find(x => x.id === b.dataset.id);
