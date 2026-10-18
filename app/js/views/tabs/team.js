@@ -1,4 +1,4 @@
-import { esc, name, avatar, ROLE_LABEL, roleChip, field, openForm, confirmAction, colorPicker, toast, errorMessage, emptyState, COLORS } from '../../ui.js?v=202610172357';
+import { esc, name, avatar, ROLE_LABEL, roleChip, field, openForm, confirmAction, colorPicker, toast, errorMessage, emptyState, COLORS, hasAccess } from '../../ui.js?v=202610180028';
 
 export async function renderTeam(el, ctx) {
   const { api, project, members, areas, staff, me } = ctx;
@@ -53,7 +53,7 @@ export async function renderTeam(el, ctx) {
   async function addMembers() {
     const all = await api.profiles();
     const inProject = new Set(members.map(m => m.id));
-    const candidates = all.filter(p => !inProject.has(p.id));
+    const candidates = all.filter(p => !inProject.has(p.id) && hasAccess(p));
     const data = await openForm({
       title: 'Sumar integrantes',
       wide: true,

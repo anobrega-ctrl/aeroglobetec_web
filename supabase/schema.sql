@@ -38,6 +38,19 @@ create table if not exists public.profiles (
   created_at  timestamptz not null default now()
 );
 
+-- Acceso: cada cuenta nueva queda pendiente hasta que un docente o un admin la aprueba
+-- (Usuarios → Pedidos de acceso). Las cuentas que ya existían cuando se agregó esto quedan aprobadas.
+do $$ begin
+  if not exists (select 1 from information_schema.columns
+                 where table_schema = 'public' and table_name = 'profiles' and column_name = 'access') then
+    alter table public.profiles add column access text not null default 'aprobado'
+      check (access in ('pendiente', 'aprobado', 'rechazado'));
+    alter table public.profiles alter column access set default 'pendiente';
+  end if;
+end $$;
+alter table public.profiles add column if not exists access_by uuid references public.profiles(id) on delete set null;
+alter table public.profiles add column if not exists access_at timestamptz;
+
 -- Administradores: tienen todos los permisos y pueden dar cualquier rol.
 -- Solo se edita desde el SQL Editor de Supabase (no hay permisos de escritura desde la web).
 create table if not exists public.admins (
@@ -194,24 +207,31 @@ language sql stable security definer set search_path = public as $$
   select exists (select 1 from profiles p join admins a on a.email = p.email where p.id = auth.uid());
 $$;
 
+-- Cuenta habilitada: aprobada por un docente o admin (los admins siempre lo están)
+create or replace function public.is_approved() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from profiles p where p.id = auth.uid()
+                 and (p.access = 'aprobado' or exists (select 1 from admins a where a.email = p.email)));
+$$;
+
 -- Docentes, estudiantes líderes y admins tienen los mismos permisos en los proyectos
 create or replace function public.is_staff() returns boolean
 language sql stable security definer set search_path = public as $$
   select public.is_admin()
-      or exists (select 1 from profiles where id = auth.uid() and role in ('docente', 'lider'));
+      or exists (select 1 from profiles where id = auth.uid() and role in ('docente', 'lider') and access = 'aprobado');
 $$;
 
 -- Pueden cambiar roles: docentes y admins
 create or replace function public.is_docente() returns boolean
 language sql stable security definer set search_path = public as $$
   select public.is_admin()
-      or exists (select 1 from profiles where id = auth.uid() and role = 'docente');
+      or exists (select 1 from profiles where id = auth.uid() and role = 'docente' and access = 'aprobado');
 $$;
 
 create or replace function public.can_view_project(p uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select public.is_staff()
-      or exists (select 1 from project_members where project_id = p and user_id = auth.uid());
+      or (public.is_approved() and exists (select 1 from project_members where project_id = p and user_id = auth.uid()));
 $$;
 
 -- ---------------------------------------------------------------------
@@ -222,6 +242,8 @@ language plpgsql security definer set search_path = public as $$
 declare
   domain text := lower(split_part(new.email, '@', 2));
   r public.user_role;
+  who text := coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1));
+  admin boolean := exists (select 1 from admins where email = lower(new.email));
 begin
   if domain = 'etec.um.edu.ar' then
     r := 'docente';
@@ -231,14 +253,18 @@ begin
     raise exception 'Solo se permiten cuentas @etec.um.edu.ar o @alumno.etec.um.edu.ar';
   end if;
 
-  insert into profiles (id, email, full_name, avatar_url, role)
-  values (
-    new.id,
-    lower(new.email),
-    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
-    new.raw_user_meta_data->>'avatar_url',
-    r
-  );
+  insert into profiles (id, email, full_name, avatar_url, role, access)
+  values (new.id, lower(new.email), who, new.raw_user_meta_data->>'avatar_url', r,
+          case when admin then 'aprobado' else 'pendiente' end);
+
+  -- Aviso a quienes pueden aprobar
+  if not admin then
+    insert into notifications (user_id, message, link)
+    select p.id, who || ' (' || lower(new.email) || ') pidió entrar a la plataforma', '#/usuarios'
+    from profiles p
+    where p.id <> new.id and p.access = 'aprobado'
+      and (p.role = 'docente' or exists (select 1 from admins a where a.email = p.email));
+  end if;
   return new;
 end $$;
 
@@ -265,6 +291,22 @@ create or replace function public.guard_profile() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if auth.uid() is null then return new; end if;  -- cambios desde el panel de Supabase
+  if new.access is distinct from old.access then
+    if new.id = auth.uid() then
+      raise exception 'No podés cambiar tu propio acceso';
+    end if;
+    if not public.is_docente() then
+      raise exception 'Solo un docente o un admin aprueba cuentas';
+    end if;
+    if exists (select 1 from admins a where a.email = old.email) and not public.is_admin() then
+      raise exception 'No se le puede quitar el acceso a un admin';
+    end if;
+    new.access_by := auth.uid();
+    new.access_at := now();
+  else
+    new.access_by := old.access_by;
+    new.access_at := old.access_at;
+  end if;
   if new.email <> old.email then
     raise exception 'El email no se puede cambiar';
   end if;
@@ -1325,7 +1367,7 @@ create index if not exists event_tasks_idx on public.event_tasks(event_id);
 create or replace function public.can_view_event(e uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select public.is_staff()
-      or exists (select 1 from event_members where event_id = e and user_id = auth.uid());
+      or (public.is_approved() and exists (select 1 from event_members where event_id = e and user_id = auth.uid()));
 $$;
 
 -- Quien crea el evento queda en el equipo
@@ -1572,3 +1614,27 @@ begin
       ('imagenes', 'Imagen para compartir',     'La que aparece al mandar el link de la web por WhatsApp o redes.', base || '/assets/compartir.png',     'compartir.png',        'image/png',  1, null);
   end if;
 end $$;
+
+-- =====================================================================
+-- Solo cuentas aprobadas: una política restrictiva en cada tabla se suma a las demás,
+-- así una cuenta pendiente o rechazada no ve ni modifica nada aunque tenga el dominio.
+-- La web pública (sin login) no se ve afectada. Va al final para cubrir todas las tablas.
+-- =====================================================================
+do $$
+declare t record;
+begin
+  for t in select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
+           where n.nspname = 'public' and c.relkind = 'r' and c.relrowsecurity and c.relname <> 'profiles' loop
+    execute format('drop policy if exists solo_aprobados on public.%I', t.relname);
+    execute format('create policy solo_aprobados on public.%I as restrictive for all to authenticated '
+                   'using (public.is_approved()) with check (public.is_approved())', t.relname);
+  end loop;
+end $$;
+
+drop policy if exists solo_aprobados on public.profiles;
+create policy solo_aprobados on public.profiles as restrictive for all to authenticated
+  using (public.is_approved() or id = auth.uid()) with check (public.is_approved() or id = auth.uid());
+
+drop policy if exists solo_aprobados on storage.objects;
+create policy solo_aprobados on storage.objects as restrictive for all to authenticated
+  using (public.is_approved()) with check (public.is_approved());

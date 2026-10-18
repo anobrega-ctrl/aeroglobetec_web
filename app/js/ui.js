@@ -20,6 +20,8 @@ export const COLORS = ['#3774bc', '#7caef3', '#ffb454', '#4fbf8b', '#e0607e', '#
 
 export const isStaff = (profile) => !!profile && (profile.is_admin || profile.role === 'docente' || profile.role === 'lider');
 export const canManageRoles = (profile) => !!profile && (profile.is_admin || profile.role === 'docente');
+// Cuenta habilitada (las anteriores a la aprobación no tienen el campo y cuentan como aprobadas)
+export const hasAccess = (p) => !!p && (p.is_admin || !p.access || p.access === 'aprobado');
 
 // Etiqueta de rol para mostrar (el admin se marca aparte del rol que le da el dominio)
 export function roleChip(p) {
