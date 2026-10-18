@@ -598,3 +598,29 @@ p.pre{white-space:pre-wrap}
 .brand-actions{display:flex;align-items:center;gap:6px;padding:8px 14px 12px}
 @media(max-width:900px){.brand-guide{grid-template-columns:1fr}.brand-colors{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.brand-fonts{grid-template-columns:1fr}.brand-grid{grid-template-columns:1fr 1fr;gap:10px}.brand-actions{flex-wrap:wrap}}
+/* Aprobación de cuentas */
+.nav-count{margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#e0607e;color:#fff;font-size:11px;font-weight:700;display:inline-grid;place-items:center}
+.nav-count[hidden]{display:none}
+.access-panel{margin-bottom:18px;border-color:#f1d9ae;background:#fffaf0}
+.access-panel h2{display:flex;align-items:center;gap:8px}
+.access-panel h2 svg{width:18px;height:18px;color:var(--amber)}
+.access-list{list-style:none;margin:0;padding:0}
+.access-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 0}
+.access-list li+li{border-top:1px solid var(--border)}
+.access-list .who{display:flex;align-items:center;gap:10px;min-width:0}
+.access-list .who>span{display:flex;flex-direction:column;min-width:0}
+.access-list small{font-size:12.5px}
+.rejected{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:10px 16px}
+.rejected summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
+.rejected[open] summary{margin-bottom:6px}
+.table td.right{text-align:right;white-space:nowrap}
+.login-card.waiting{text-align:center;justify-items:center}
+.login-card.waiting .login-logo{justify-self:center}
+.waiting-icon{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--amber-soft);color:var(--amber);margin-top:6px}
+.waiting-icon.no{background:var(--red-soft);color:var(--red)}
+.waiting-icon svg{width:26px;height:26px}
+.login-card.waiting h1{margin:0}
+.login-card.waiting .btn{width:100%}
+.waiting-who{display:flex;align-items:center;gap:10px;background:var(--subtle);border:1px solid var(--border);border-radius:var(--r-lg);padding:8px 12px;margin:0;text-align:left;max-width:100%}
+.waiting-who>span{display:flex;flex-direction:column;min-width:0}
+.waiting-who small{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis}

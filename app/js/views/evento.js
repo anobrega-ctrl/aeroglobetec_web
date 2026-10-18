@@ -1,9 +1,9 @@
 // Detalle de una charla o competencia: resumen, materiales, preparación y equipo.
 import {
   esc, icon, name, avatar, isStaff, field, options, openForm, confirmAction, toast, errorMessage,
-  fmtDate, daysUntil, dueLabel, fileSize, emptyState, embedUrl,
-} from '../ui.js?v=202610172357';
-import { KIND, EVENT_STATUS, editEvent } from './eventos.js?v=202610172357';
+  fmtDate, daysUntil, dueLabel, fileSize, emptyState, embedUrl, hasAccess,
+} from '../ui.js?v=202610180028';
+import { KIND, EVENT_STATUS, editEvent } from './eventos.js?v=202610180028';
 
 const MATERIAL = {
   presentacion: ['Presentaciones', 'presentation'],
@@ -204,7 +204,7 @@ export async function renderEvento(el, ctx) {
   async function addMembers() {
     const all = await api.profiles();
     const inEvent = new Set(members.map(m => m.id));
-    const candidates = all.filter(p => !inEvent.has(p.id));
+    const candidates = all.filter(p => !inEvent.has(p.id) && hasAccess(p));
     const data = await openForm({
       title: 'Sumar al equipo',
       wide: true,

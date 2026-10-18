@@ -1,4 +1,4 @@
-import { esc, ROLE_LABEL, errorMessage } from '../ui.js?v=202610172357';
+import { esc, ROLE_LABEL, errorMessage } from '../ui.js?v=202610180028';
 
 export async function renderLogin(el, { api, notice = '' }) {
   // Errores al volver del link del mail o de Google (dominio no permitido, link vencido, etc.)

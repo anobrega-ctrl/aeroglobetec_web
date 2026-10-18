@@ -79,7 +79,8 @@ function seed() {
     { id: uid(), email: 'mateo.gomez@alumno.etec.um.edu.ar', full_name: 'Mateo Gómez', role: 'estudiante' },
     { id: uid(), email: 'valen.sosa@alumno.etec.um.edu.ar', full_name: 'Valentina Sosa', role: 'estudiante' },
     { id: uid(), email: 'mal.gimenez@alumno.etec.um.edu.ar', full_name: 'Mal Giménez', role: 'estudiante', is_admin: true },
-  ].map(p => ({ is_admin: false, ...p, avatar_url: null, created_at: ago(500) }));
+    { id: uid(), email: 'juan.nuevo@alumno.etec.um.edu.ar', full_name: 'Juan Nuevo', role: 'estudiante', access: 'pendiente', created_at: ago(3) },
+  ].map(p => ({ is_admin: false, access: 'aprobado', avatar_url: null, created_at: ago(500), ...p }));
   const [doc, lider, tomas, sofia, mateo, valen] = people.map(p => p.id);
   const P = uid();
   const areas = [
@@ -288,6 +289,15 @@ export const api = {
   // ---------- Perfiles ----------
   async me() { return clone(meP() || null); },
   async profiles() { return clone(db.profiles).sort((a, b) => a.full_name.localeCompare(b.full_name)); },
+  async setAccess(userId, access) {
+    if (!(meP().is_admin || meP().role === 'docente')) throw new Error('Solo un docente o un admin aprueba cuentas');
+    if (userId === db.me) throw new Error('No podés cambiar tu propio acceso');
+    const p = db.profiles.find(x => x.id === userId);
+    if (p.is_admin && !meP().is_admin) throw new Error('No se le puede quitar el acceso a un admin');
+    Object.assign(p, { access, access_by: db.me, access_at: now() });
+    save();
+  },
+  async pendingCount() { return db.profiles.filter(p => p.access === 'pendiente').length; },
   async setRole(userId, role) {
     const admin = meP().is_admin;
     if (!admin && meP().role !== 'docente') deny();

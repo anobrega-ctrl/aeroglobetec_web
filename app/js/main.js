@@ -1,18 +1,18 @@
 // Punto de entrada: elige la API (Supabase o demo), controla la sesión y el ruteo por hash.
-import { DEMO_MODE } from './config.js?v=202610172357';
-import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610172357';
-import { renderLogin } from './views/login.js?v=202610172357';
-import { renderDashboard } from './views/dashboard.js?v=202610172357';
-import { renderProject } from './views/project.js?v=202610172357';
-import { renderUsers } from './views/users.js?v=202610172357';
-import { renderReport } from './views/report.js?v=202610172357';
-import { renderTurnos } from './views/turnos.js?v=202610172357';
-import { renderSitio } from './views/sitio.js?v=202610172357';
-import { renderEventos } from './views/eventos.js?v=202610172357';
-import { renderMarca } from './views/marca.js?v=202610172357';
-import { renderEvento } from './views/evento.js?v=202610172357';
+import { DEMO_MODE } from './config.js?v=202610180028';
+import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, hasAccess, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610180028';
+import { renderLogin } from './views/login.js?v=202610180028';
+import { renderDashboard } from './views/dashboard.js?v=202610180028';
+import { renderProject } from './views/project.js?v=202610180028';
+import { renderUsers } from './views/users.js?v=202610180028';
+import { renderReport } from './views/report.js?v=202610180028';
+import { renderTurnos } from './views/turnos.js?v=202610180028';
+import { renderSitio } from './views/sitio.js?v=202610180028';
+import { renderEventos } from './views/eventos.js?v=202610180028';
+import { renderMarca } from './views/marca.js?v=202610180028';
+import { renderEvento } from './views/evento.js?v=202610180028';
 
-const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610172357') : await import('./api.js?v=202610172357');
+const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610180028') : await import('./api.js?v=202610180028');
 const app = document.getElementById('app');
 let me = null;
 
@@ -47,9 +47,39 @@ async function boot() {
     await renderLogin(app, { api, notice });
     return;
   }
+  if (!hasAccess(me)) { renderWaiting(); return; }
   document.body.classList.add('signed-in');
   renderShell();
   await route();
+}
+
+// Cuenta todavía no aprobada (o rechazada): no entra hasta que un docente o un admin la habilite
+function renderWaiting() {
+  document.body.classList.remove('signed-in');
+  const rejected = me.access === 'rechazado';
+  app.innerHTML = `
+    ${api.demo ? demoBar() : ''}
+    <main class="center-page space">
+      <div class="login-card waiting">
+        <div class="login-logo"><img src="icons/icon-192.png" alt="" width="36" height="36"/>AeroGlobETec</div>
+        <span class="waiting-icon ${rejected ? 'no' : ''}">${icon(rejected ? 'alert' : 'clock')}</span>
+        <h1>${rejected ? 'No tenés acceso a la plataforma' : 'Tu cuenta está esperando aprobación'}</h1>
+        <p class="muted">${rejected
+          ? 'Un docente no habilitó esta cuenta. Si creés que es un error, hablá con un docente del taller.'
+          : 'Para entrar, un docente o un admin del taller tiene que aprobar tu cuenta. Ya les avisamos; cuando te habiliten, volvé a entrar.'}</p>
+        <p class="waiting-who">${avatar(me, 'xs')}<span><b>${esc(name(me))}</b><small>${esc(me.email)}</small></span></p>
+        ${rejected ? '' : `<button class="btn primary" id="recheck">Ya me aprobaron, entrar</button>`}
+        <button class="btn ghost" id="logout-wait">Salir y usar otra cuenta</button>
+        <a class="muted back" href="../">Ir a la web del taller</a>
+      </div>
+    </main>`;
+  app.querySelector('#recheck')?.addEventListener('click', async (ev) => {
+    ev.target.disabled = true;
+    await start();
+    if (!hasAccess(me)) { ev.target.disabled = false; toast('Todavía no te aprobaron'); }
+  });
+  app.querySelector('#logout-wait').addEventListener('click', async () => { await api.signOut(); location.hash = ''; start(); });
+  if (api.demo) bindDemoBar();
 }
 
 function showFatal(e) {
@@ -83,7 +113,7 @@ function renderShell() {
           <a href="#/eventos" data-nav="eventos">${icon('trophy')}<span>Charlas y competencias</span></a>
           <a href="#/marca" data-nav="marca">${icon('image')}<span>Imagen de marca</span></a>
           <a href="#/turnos" data-nav="turnos">${icon('calendar')}<span>Turnos</span></a>
-          ${staff ? `<a href="#/usuarios" data-nav="users">${icon('users')}<span>Usuarios</span></a>` : ''}
+          ${staff ? `<a href="#/usuarios" data-nav="users">${icon('users')}<span>Usuarios</span><span class="nav-count" id="pending-count" hidden></span></a>` : ''}
           ${canManageRoles(me) ? `<a href="#/sitio" data-nav="sitio">${icon('globe')}<span>Sitio web</span></a>` : ''}
         </nav>
         <div class="side-projects">
@@ -196,6 +226,7 @@ function bindDemoBar() {
 }
 
 async function refreshBell() {
+  refreshPending();
   try {
     const list = await api.notifications();
     const unread = list.filter(n => !n.read).length;
@@ -203,6 +234,19 @@ async function refreshBell() {
     if (dot) { dot.hidden = !unread; dot.textContent = unread > 9 ? '9+' : unread; }
   } catch { /* la campanita no es crítica */ }
 }
+
+// Pedidos de acceso sin responder (solo lo ven quienes pueden aprobar)
+async function refreshPending() {
+  const badge = document.getElementById('pending-count');
+  if (!badge || !canManageRoles(me)) return;
+  try {
+    const n = await api.pendingCount();
+    badge.hidden = !n;
+    badge.textContent = n > 9 ? '9+' : n;
+    badge.title = `${n} pedido${n === 1 ? '' : 's'} de acceso`;
+  } catch { /* no es crítico */ }
+}
+window.addEventListener('access-changed', refreshPending);
 
 async function openNotifications(menu) {
   menu.innerHTML = '<p class="muted pad">Cargando…</p>';

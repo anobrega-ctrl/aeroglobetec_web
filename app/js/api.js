@@ -1,7 +1,7 @@
 // Capa de datos con Supabase. Todas las vistas hablan con la base a través de este módulo.
 // Los permisos reales los aplica la base de datos (ver supabase/schema.sql).
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610172357';
+import { SUPABASE_URL, SUPABASE_KEY, ALLOWED_DOMAINS } from './config.js?v=202610180028';
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, detectSessionInUrl: true, flowType: 'pkce' },
@@ -100,6 +100,16 @@ export const api = {
   },
   async setRole(userId, role) {
     check(await sb.from('profiles').update({ role }).eq('id', userId));
+  },
+  // Aprobar, rechazar o quitar el acceso a una cuenta (docentes y admins)
+  async setAccess(userId, access) {
+    const r = check(await sb.from('profiles').update({ access }).eq('id', userId).select('id'));
+    if (!r.length) throw new Error('No tenés permiso para aprobar cuentas.');
+  },
+  async pendingCount() {
+    const { count, error } = await sb.from('profiles').select('id', { count: 'exact', head: true }).eq('access', 'pendiente');
+    if (error) throw error;
+    return count || 0;
   },
   async updateMyName(userId, full_name) {
     check(await sb.from('profiles').update({ full_name }).eq('id', userId));

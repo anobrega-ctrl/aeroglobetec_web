@@ -1,4 +1,4 @@
-import { esc, name, daysUntil, fmtDate, timeAgo, emptyState } from '../../ui.js?v=202610172357';
+import { esc, name, daysUntil, fmtDate, timeAgo, emptyState } from '../../ui.js?v=202610180028';
 
 export async function renderSummary(el, ctx) {
   const { api, project, members } = ctx;
