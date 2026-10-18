@@ -1,6 +1,6 @@
 // Exportar un proyecto a Excel (.xlsx). La librería SheetJS se carga recién al exportar.
-import { name, TASK_STATUS, UPDATE_STATUS, ITEM_STATUS, PRIORITY } from './ui.js?v=202610172052';
-import { RESULT, SEVERITY, ISSUE_STATUS } from './views/tabs/ensayos.js?v=202610172052';
+import { name, TASK_STATUS, UPDATE_STATUS, ITEM_STATUS, PRIORITY } from './ui.js?v=202610172357';
+import { RESULT, SEVERITY, ISSUE_STATUS } from './views/tabs/ensayos.js?v=202610172357';
 
 const SHEETJS = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 let loading = null;
