@@ -297,6 +297,17 @@ export const api = {
     Object.assign(p, { access, access_by: db.me, access_at: now() });
     save();
   },
+  async invites() { return clone(db.invites || []); },
+  async addInvite(inv) {
+    if (!(meP().is_admin || meP().role === 'docente')) deny();
+    if (inv.role === 'docente' && !meP().is_admin) throw new Error('Solo un admin puede invitar como docente.');
+    db.invites ||= [];
+    const email = inv.email.trim().toLowerCase();
+    if (db.invites.some(i => i.email === email)) throw new Error('Ese mail ya está invitado.');
+    db.invites.unshift({ note: '', ...inv, email, invited_by: db.me, created_at: now() });
+    save();
+  },
+  async deleteInvite(email) { db.invites = (db.invites || []).filter(i => i.email !== email); save(); },
   async pendingCount() { return db.profiles.filter(p => p.access === 'pendiente').length; },
   async setRole(userId, role) {
     const admin = meP().is_admin;

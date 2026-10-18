@@ -1,18 +1,18 @@
 // Punto de entrada: elige la API (Supabase o demo), controla la sesión y el ruteo por hash.
-import { DEMO_MODE } from './config.js?v=202610180028';
-import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, hasAccess, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610180028';
-import { renderLogin } from './views/login.js?v=202610180028';
-import { renderDashboard } from './views/dashboard.js?v=202610180028';
-import { renderProject } from './views/project.js?v=202610180028';
-import { renderUsers } from './views/users.js?v=202610180028';
-import { renderReport } from './views/report.js?v=202610180028';
-import { renderTurnos } from './views/turnos.js?v=202610180028';
-import { renderSitio } from './views/sitio.js?v=202610180028';
-import { renderEventos } from './views/eventos.js?v=202610180028';
-import { renderMarca } from './views/marca.js?v=202610180028';
-import { renderEvento } from './views/evento.js?v=202610180028';
+import { DEMO_MODE } from './config.js?v=202610180031';
+import { esc, avatar, name, icon, ROLE_LABEL, roleChip, isStaff, canManageRoles, hasAccess, timeAgo, toast, errorMessage, openForm, field } from './ui.js?v=202610180031';
+import { renderLogin } from './views/login.js?v=202610180031';
+import { renderDashboard } from './views/dashboard.js?v=202610180031';
+import { renderProject } from './views/project.js?v=202610180031';
+import { renderUsers } from './views/users.js?v=202610180031';
+import { renderReport } from './views/report.js?v=202610180031';
+import { renderTurnos } from './views/turnos.js?v=202610180031';
+import { renderSitio } from './views/sitio.js?v=202610180031';
+import { renderEventos } from './views/eventos.js?v=202610180031';
+import { renderMarca } from './views/marca.js?v=202610180031';
+import { renderEvento } from './views/evento.js?v=202610180031';
 
-const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610180028') : await import('./api.js?v=202610180028');
+const { api } = DEMO_MODE ? await import('./demo-api.js?v=202610180031') : await import('./api.js?v=202610180031');
 const app = document.getElementById('app');
 let me = null;
 
@@ -42,7 +42,7 @@ async function boot() {
     let notice = '';
     if (await api.session().catch(() => null)) {
       await api.signOut().catch(() => {});
-      notice = 'Tu cuenta no está habilitada. Entrá con tu mail @etec.um.edu.ar o @alumno.etec.um.edu.ar.';
+      notice = 'Tu cuenta no está habilitada. Entrá con tu mail @etec.um.edu.ar o @alumno.etec.um.edu.ar, o pedile a un docente que invite tu mail.';
     }
     await renderLogin(app, { api, notice });
     return;
